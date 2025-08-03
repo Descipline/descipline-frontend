@@ -59,17 +59,22 @@ export default function ChallengeDetailScreen() {
 
   // Hide tab bar for this screen
   useLayoutEffect(() => {
-    navigation.getParent()?.setOptions({
-      tabBarStyle: { display: 'none' }
-    })
+    const parent = navigation.getParent()
+    if (parent) {
+      parent.setOptions({
+        tabBarStyle: { display: 'none' }
+      })
+    }
     
     return () => {
-      navigation.getParent()?.setOptions({
-        tabBarStyle: {
-          backgroundColor: SolanaColors.brand.dark,
-          borderTopColor: 'rgba(255, 255, 255, 0.1)',
-        }
-      })
+      if (parent) {
+        parent.setOptions({
+          tabBarStyle: {
+            backgroundColor: SolanaColors.brand.dark,
+            borderTopColor: 'rgba(255, 255, 255, 0.1)',
+          }
+        })
+      }
     }
   }, [navigation])
   

@@ -137,6 +137,15 @@ export function ActionConfirmationModal({
 
           {/* Content */}
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {/* Debug Info */}
+            {visible && mode === 'stake' && (
+              <View style={{ backgroundColor: 'red', padding: 10, marginBottom: 10 }}>
+                <AppText style={{ color: 'white' }}>DEBUG: Challenge Name: {challenge?.name || 'undefined'}</AppText>
+                <AppText style={{ color: 'white' }}>DEBUG: Stake Amount: {challenge?.stakeAmount || 'undefined'}</AppText>
+                <AppText style={{ color: 'white' }}>DEBUG: Token: {challenge?.tokenAllowed || 'undefined'}</AppText>
+              </View>
+            )}
+            
             {/* Challenge Info */}
             <View style={styles.section}>
               <AppText style={styles.sectionTitle}>Challenge Details</AppText>
@@ -357,7 +366,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 480,
-    maxHeight: '90%',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
@@ -393,7 +401,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    flex: 1,
+    maxHeight: 400,
     padding: 24,
   },
   section: {
