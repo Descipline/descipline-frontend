@@ -34,6 +34,10 @@ export default function SignInScreen() {
 
   return (
     <AppView style={styles.container}>
+      <LinearGradient
+        colors={['#1a0d2e', '#2d1b4e', '#1a0d2e']}
+        style={StyleSheet.absoluteFillObject}
+      />
       <View style={styles.content}>
         {/* Header Section */}
         <View style={styles.header}>
@@ -62,14 +66,9 @@ export default function SignInScreen() {
               colors={['#7c3aed', SolanaColors.brand.purple]}
               style={styles.connectButtonGradient}
             />
-            {isLoading ? (
-              <AppText style={styles.connectButtonText}>Connecting...</AppText>
-            ) : (
-              <>
-                <UiIconSymbol name="link" size={20} color="#ffffff" />
-                <AppText style={styles.connectButtonText}>CONNECT</AppText>
-              </>
-            )}
+            <AppText style={styles.connectButtonText}>
+              {isLoading ? 'CONNECTING...' : 'CONNECT'}
+            </AppText>
           </TouchableOpacity>
         </View>
 
@@ -81,7 +80,6 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: SolanaColors.brand.dark,
   },
   content: {
     flex: 1,
@@ -125,14 +123,17 @@ const styles = StyleSheet.create({
   },
   connectButton: {
     position: 'relative',
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
     paddingHorizontal: 32,
-    borderRadius: 16,
+    borderRadius: 28,
     overflow: 'hidden',
-    gap: 12,
+    elevation: 8,
+    shadowColor: SolanaColors.brand.purple,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   connectButtonGradient: {
     position: 'absolute',
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
   },
   connectButtonText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#ffffff',
   },
   infoContainer: {
