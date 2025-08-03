@@ -15,7 +15,6 @@ export function ChallengeFeature() {
       {/* Action Bar */}
       <View style={styles.actionBar}>
         <View style={styles.actionBarLeft}>
-          <AppText style={styles.sectionTitle}>All Challenges</AppText>
           <AppText style={styles.sectionSubtitle}>Discover and join active challenges</AppText>
         </View>
         
@@ -53,12 +52,6 @@ const styles = StyleSheet.create({
   },
   actionBarLeft: {
     flex: 1,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 4,
   },
   sectionSubtitle: {
     fontSize: 14,

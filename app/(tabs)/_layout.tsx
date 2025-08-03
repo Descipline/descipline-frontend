@@ -31,7 +31,7 @@ export default function TabLayout() {
       
       {/* Home - main landing page */}
       <Tabs.Screen 
-        name="account" 
+        name="home" 
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="house.fill" color={color} />,
@@ -49,19 +49,10 @@ export default function TabLayout() {
       
       {/* Profile */}
       <Tabs.Screen 
-        name="settings" 
+        name="profile" 
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="person.fill" color={color} />,
-        }}
-      />
-      
-      {/* Debug Test - Temporary for debugging */}
-      <Tabs.Screen 
-        name="gill-test" 
-        options={{
-          title: 'Debug',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="wrench.fill" color={color} />,
         }}
       />
     </Tabs>

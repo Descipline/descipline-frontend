@@ -1,49 +1,96 @@
-import { router } from 'expo-router'
-import { useAuth } from '@/components/auth/auth-provider'
-import { AppText } from '@/components/app-text'
+import React, { useState, useEffect } from 'react'
+import { View, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { useRouter } from 'expo-router'
 import { AppView } from '@/components/app-view'
-import { AppConfig } from '@/constants/app-config'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { ActivityIndicator, View, StyleSheet } from 'react-native'
-import { Image } from 'expo-image'
-import { Button } from '@react-navigation/elements'
+import { AppText } from '@/components/app-text'
+import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
 import { SolanaColors } from '@/constants/colors'
+import { useAuth } from '@/components/auth/auth-provider'
 
-export default function SignIn() {
-  const { signIn, isLoading } = useAuth()
+export default function SignInScreen() {
+  const router = useRouter()
+  const { account, signIn, isLoading } = useAuth()
+  
+  const [modalVisible, setModalVisible] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+
+  const handleConnect = async () => {
+    try {
+      await signIn()
+    } catch (error) {
+      console.error('Wallet connection error:', error)
+    }
+  }
+
+  // Auto-redirect when connected
+  useEffect(() => {
+    if (account) {
+      console.log('Wallet connected, redirecting to home')
+      router.replace('/(tabs)/')
+    }
+  }, [account, router])
+
   return (
-    <AppView
-      style={[styles.container, { backgroundColor: SolanaColors.brand.dark }]}
-    >
-      {isLoading ? (
-        <ActivityIndicator color={SolanaColors.brand.purple} />
-      ) : (
-        <SafeAreaView style={styles.safeArea}>
-          {/* Dummy view to push the next view to the center. */}
-          <View />
-          <View style={styles.centerContent}>
-            <View style={styles.logoContainer}>
-              <View style={styles.logoCircle}>
-                <AppText style={styles.logoText}>D</AppText>
-              </View>
-              <AppText style={styles.title}>Descipline</AppText>
-            </View>
-            <AppText style={styles.subtitle}>Solana Mobile DApp</AppText>
-          </View>
-          <View style={styles.buttonContainer}>
-            <Button
-              variant="filled"
-              style={[styles.connectButton, { backgroundColor: SolanaColors.brand.purple }]}
-              onPress={async () => {
-                await signIn()
-                router.replace('/')
-              }}
-            >
-              Connect Wallet
-            </Button>
-          </View>
-        </SafeAreaView>
-      )}
+    <AppView style={styles.container}>
+      <View style={styles.content}>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <LinearGradient
+            colors={[SolanaColors.brand.purple, '#dc1fff']}
+            style={styles.logoContainer}
+          >
+            <UiIconSymbol name="wallet.pass.fill" size={48} color="#ffffff" />
+          </LinearGradient>
+          
+          <AppText style={styles.title}>Connect Your Wallet</AppText>
+          <AppText style={styles.subtitle}>
+            Connect your Solana wallet to start participating in challenges
+          </AppText>
+        </View>
+
+        {/* Connect Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.connectButton}
+            onPress={handleConnect}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={[SolanaColors.brand.purple, '#dc1fff']}
+              style={styles.connectButtonGradient}
+            />
+            {isLoading ? (
+              <AppText style={styles.connectButtonText}>Connecting...</AppText>
+            ) : (
+              <>
+                <UiIconSymbol name="link" size={20} color="#ffffff" />
+                <AppText style={styles.connectButtonText}>Connect Mobile Wallet</AppText>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        {/* Platform Info */}
+        <View style={styles.infoContainer}>
+          <AppText style={styles.infoText}>
+            Using Mobile Wallet Adapter for secure connections.
+          </AppText>
+        </View>
+
+        {/* Debug Info */}
+        <View style={styles.debugContainer}>
+          <AppText style={styles.debugText}>
+            Platform: Mobile | Strategy: Mobile Wallet Adapter
+          </AppText>
+          {account && (
+            <AppText style={styles.debugText}>
+              Connected: {account.publicKey.toString().slice(0, 8)}...{account.publicKey.toString().slice(-8)}
+            </AppText>
+          )}
+        </View>
+      </View>
     </AppView>
   )
 }
@@ -51,49 +98,89 @@ export default function SignIn() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'stretch',
+    backgroundColor: SolanaColors.brand.dark,
   },
-  safeArea: {
+  content: {
     flex: 1,
-    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    justifyContent: 'center',
   },
-  centerContent: {
+  header: {
     alignItems: 'center',
-    gap: 16,
+    marginBottom: 60,
   },
   logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  logoCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: SolanaColors.brand.purple,
+    width: 100,
+    height: 100,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  logoText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#ffffff',
+    marginBottom: 24,
+    shadowColor: SolanaColors.brand.purple,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 12,
   },
   subtitle: {
     fontSize: 16,
     color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: 20,
   },
   buttonContainer: {
-    marginBottom: 16,
+    marginBottom: 40,
   },
   connectButton: {
-    marginHorizontal: 16,
-    borderRadius: 12,
+    position: 'relative',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    overflow: 'hidden',
+    gap: 12,
+  },
+  connectButtonGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  connectButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  infoContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  infoText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  debugContainer: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  debugText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.4)',
+    textAlign: 'center',
+    marginBottom: 4,
   },
 })
