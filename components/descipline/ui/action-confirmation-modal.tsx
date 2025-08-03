@@ -357,6 +357,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 480,
+    maxHeight: '85%',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
@@ -392,7 +393,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   content: {
-    maxHeight: 400,
+    flex: 1,
     padding: 24,
   },
   section: {

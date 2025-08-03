@@ -263,7 +263,7 @@ export default function Home() {
 
         {/* Features Grid */}
         <View style={styles.featuresSection}>
-          <AppText style={styles.sectionTitle}>Why Choose DESCIPLINE?</AppText>
+          <AppText style={styles.sectionTitle}>Why DESCIPLINE?</AppText>
           
           <View style={styles.featuresGrid}>
             <FeatureCard
@@ -405,15 +405,15 @@ const styles = StyleSheet.create({
   // Hero Section
   heroSection: {
     paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 60,
+    paddingTop: 60,
+    paddingBottom: 80,
     alignItems: 'center',
-    minHeight: height * 0.75,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
   },
   heroContent: {
     alignItems: 'center',
     maxWidth: width - 48,
+    paddingTop: 20,
   },
   heroBadge: {
     flexDirection: 'row',
@@ -436,20 +436,21 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   heroTitle: {
-    fontSize: 48,
+    fontSize: Math.min(48, width * 0.12),
     fontWeight: '800',
     color: '#ffffff',
     textAlign: 'center',
     marginBottom: 16,
     letterSpacing: 1,
+    lineHeight: Math.min(56, width * 0.14),
   },
   heroSubtitle: {
-    fontSize: 22,
+    fontSize: Math.min(22, width * 0.055),
     fontWeight: '600',
     color: SolanaColors.brand.purple,
     textAlign: 'center',
     marginBottom: 16,
-    lineHeight: 28,
+    lineHeight: Math.min(28, width * 0.07),
   },
   heroDescription: {
     fontSize: 16,
@@ -532,11 +533,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.02)',
   },
   sectionTitle: {
-    fontSize: 28,
+    fontSize: Math.min(28, width * 0.07),
     fontWeight: '700',
     color: '#ffffff',
     textAlign: 'center',
     marginBottom: 12,
+    lineHeight: Math.min(34, width * 0.085),
   },
   sectionSubtitle: {
     fontSize: 16,

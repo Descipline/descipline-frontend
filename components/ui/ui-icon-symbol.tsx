@@ -75,6 +75,10 @@ const MAPPING = {
   'safari': 'open-in-browser',
   'arrow.right.circle.fill': 'arrow-circle-right',
   'lightbulb.fill': 'lightbulb',
+  // Home page icons
+  'sparkles': 'auto-awesome',
+  'rocket.fill': 'rocket-launch',
+  'shield.checkered': 'security',
 } as UiIconMapping
 
 /**
