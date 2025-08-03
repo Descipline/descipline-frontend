@@ -89,7 +89,7 @@ function parseChallengeData(buffer: Buffer, publicKey: string): GillChallengeDat
 }
 
 /**
- * Fetch all challenges using gill
+ * Fetch all challenges using gill (with dynamic size detection)
  */
 export async function fetchChallengesWithGill(rpcUrl?: string): Promise<GillChallengeData[]> {
   try {
@@ -99,33 +99,51 @@ export async function fetchChallengesWithGill(rpcUrl?: string): Promise<GillChal
     const { PROGRAM_ID } = getDesciplinePublicKeys()
     const programAddress = address(PROGRAM_ID.toString())
     
-    // Get all program accounts
-    const accounts = await client.rpc.getProgramAccounts(
+    // First, get ALL accounts to detect actual challenge size
+    const allAccounts = await client.rpc.getProgramAccounts(
       programAddress,
       {
         encoding: 'base64',
-        filters: [
-          // Filter by exact Challenge account size (based on contract struct)
-          // Challenge: 8 (discriminator) + ~159 (struct) = ~167 bytes
-          { dataSize: 167 } // Exact challenge size from contract
-        ]
+        filters: []
       }
     ).send()
     
-    console.log(`🔧 Found ${accounts.length} potential challenge accounts`)
+    console.log(`🔧 Found ${allAccounts.length} total accounts, analyzing sizes...`)
+    
+    // Group by size to find the most likely challenge accounts
+    const accountSizes = allAccounts.map(acc => {
+      if (Array.isArray(acc.account.data) && acc.account.data.length >= 2) {
+        const size = Buffer.from(acc.account.data[0], acc.account.data[1] as BufferEncoding).length
+        return { ...acc, size }
+      }
+      return { ...acc, size: 0 }
+    })
+    
+    // Find accounts that are likely to be challenges (larger than receipts)
+    const sizeGroups = accountSizes.reduce((groups, acc) => {
+      const size = acc.size
+      if (!groups[size]) groups[size] = []
+      groups[size].push(acc)
+      return groups
+    }, {} as Record<number, typeof accountSizes>)
+    
+    console.log('📊 Account sizes found:', Object.keys(sizeGroups).map(size => `${size} bytes: ${sizeGroups[parseInt(size)].length} accounts`))
+    
+    // Assume the largest accounts are challenges (excluding very small ones like receipts)
+    const challengeCandidates = accountSizes.filter(acc => acc.size > 50) // Challenges should be reasonably large
+    
+    console.log(`🔧 Found ${challengeCandidates.length} potential challenge accounts (size > 50 bytes)`)
     
     const challenges: GillChallengeData[] = []
     
-    for (const account of accounts) {
+    for (const account of challengeCandidates) {
       try {
         const data = account.account.data
         
         if (Array.isArray(data) && data.length >= 2) {
           const buffer = Buffer.from(data[0], data[1] as BufferEncoding)
           
-          // Check if this looks like a challenge account by checking discriminator
-          // Challenge discriminator should be consistent
-          const discriminator = Array.from(buffer.slice(0, 8))
+          console.log(`🔍 Analyzing account ${account.pubkey.slice(0, 8)}: ${buffer.length} bytes`)
           
           // Try to parse as challenge
           const challenge = parseChallengeData(buffer, account.pubkey)
@@ -272,11 +290,44 @@ export async function getProgramStatsWithGill(rpcUrl?: string): Promise<GillStat
     
     console.log(`🔧 Found ${allAccounts.length} total program accounts`)
     
-    // Categorize by exact account size based on contract structs
+    // Debug: Log all account sizes to find the real challenge size
+    const accountSizes = allAccounts.map(acc => {
+      if (Array.isArray(acc.account.data) && acc.account.data.length >= 2) {
+        const size = Buffer.from(acc.account.data[0], acc.account.data[1] as BufferEncoding).length
+        return { pubkey: acc.pubkey.slice(0, 8), size }
+      }
+      return { pubkey: acc.pubkey.slice(0, 8), size: 0 }
+    })
+    
+    console.log('🔍 All account sizes:', accountSizes)
+    
+    // Group by size to identify patterns
+    const sizeGroups = accountSizes.reduce((groups, acc) => {
+      const size = acc.size
+      if (!groups[size]) groups[size] = []
+      groups[size].push(acc.pubkey)
+      return groups
+    }, {} as Record<number, string[]>)
+    
+    console.log('📊 Account size groups:', sizeGroups)
+    
+    // Find the most likely challenge size (largest accounts, excluding very small ones)
+    const sizeCounts = Object.entries(sizeGroups).map(([size, accounts]) => ({
+      size: parseInt(size),
+      count: accounts.length,
+      accounts: accounts.slice(0, 3) // Show first 3 examples
+    })).sort((a, b) => b.size - a.size)
+    
+    console.log('📈 Size analysis:', sizeCounts)
+    
+    // Assume largest accounts are challenges, smallest are receipts
+    const largestSize = sizeCounts[0]?.size || 0
+    const smallestSize = sizeCounts[sizeCounts.length - 1]?.size || 0
+    
     const challenges = allAccounts.filter(acc => {
       if (Array.isArray(acc.account.data) && acc.account.data.length >= 2) {
         const size = Buffer.from(acc.account.data[0], acc.account.data[1] as BufferEncoding).length
-        return size === 167 // Exact Challenge size
+        return size === largestSize && size > 50 // Challenges should be reasonably large
       }
       return false
     })
@@ -284,7 +335,7 @@ export async function getProgramStatsWithGill(rpcUrl?: string): Promise<GillStat
     const receipts = allAccounts.filter(acc => {
       if (Array.isArray(acc.account.data) && acc.account.data.length >= 2) {
         const size = Buffer.from(acc.account.data[0], acc.account.data[1] as BufferEncoding).length
-        return size === 9 // Exact Receipt size
+        return size === smallestSize && size < 50 // Receipts should be small
       }
       return false
     })
@@ -298,7 +349,8 @@ export async function getProgramStatsWithGill(rpcUrl?: string): Promise<GillStat
       totalReceipts: receipts.length
     }
     
-    console.log('✅ Program stats:', stats)
+    console.log('✅ Program stats (auto-detected sizes):', stats)
+    console.log(`💡 Detected challenge size: ${largestSize} bytes, receipt size: ${smallestSize} bytes`)
     return stats
     
   } catch (error) {
