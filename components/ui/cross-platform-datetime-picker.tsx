@@ -28,7 +28,7 @@ export function CrossPlatformDateTimePicker({
 }: CrossPlatformDateTimePickerProps) {
   const [selectedDate, setSelectedDate] = useState(value)
   const [selectedHour, setSelectedHour] = useState(value.getHours())
-  const [selectedMinute, setSelectedMinute] = useState(value.getMinutes())
+  const [selectedMinute, setSelectedMinute] = useState(Math.round(value.getMinutes() / 5) * 5) // Round to nearest 5 minutes
 
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 5 }, (_, i) => currentYear + i)
@@ -163,19 +163,63 @@ export function CrossPlatformDateTimePicker({
             <View style={styles.section}>
               <AppText style={styles.sectionTitle}>⏰ Time</AppText>
               <View style={styles.timePickerRow}>
-                <PickerColumn
-                  data={hours}
-                  selectedValue={selectedHour}
-                  onValueChange={(hour) => handleTimeChange(hour, selectedMinute)}
-                  renderItem={(hour) => hour.toString().padStart(2, '0')}
-                />
+                <View style={styles.timeColumnContainer}>
+                  <AppText style={styles.timeColumnLabel}>Hour</AppText>
+                  <View style={styles.timePickerColumn}>
+                    <ScrollView 
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={styles.pickerColumnContent}
+                    >
+                      {hours.map((hour, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            styles.pickerItem,
+                            selectedHour === hour && styles.pickerItemSelected
+                          ]}
+                          onPress={() => handleTimeChange(hour, selectedMinute)}
+                          activeOpacity={0.7}
+                        >
+                          <AppText style={[
+                            styles.pickerItemText,
+                            selectedHour === hour && styles.pickerItemTextSelected
+                          ]}>
+                            {hour.toString().padStart(2, '0')}
+                          </AppText>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                </View>
                 <AppText style={styles.timeSeparator}>:</AppText>
-                <PickerColumn
-                  data={minutes}
-                  selectedValue={selectedMinute}
-                  onValueChange={(minute) => handleTimeChange(selectedHour, minute)}
-                  renderItem={(minute) => minute.toString().padStart(2, '0')}
-                />
+                <View style={styles.timeColumnContainer}>
+                  <AppText style={styles.timeColumnLabel}>Minute</AppText>
+                  <View style={styles.timePickerColumn}>
+                    <ScrollView 
+                      showsVerticalScrollIndicator={false}
+                      contentContainerStyle={styles.pickerColumnContent}
+                    >
+                      {minutes.map((minute, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            styles.pickerItem,
+                            selectedMinute === minute && styles.pickerItemSelected
+                          ]}
+                          onPress={() => handleTimeChange(selectedHour, minute)}
+                          activeOpacity={0.7}
+                        >
+                          <AppText style={[
+                            styles.pickerItemText,
+                            selectedMinute === minute && styles.pickerItemTextSelected
+                          ]}>
+                            {minute.toString().padStart(2, '0')}
+                          </AppText>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                </View>
               </View>
             </View>
 
@@ -280,13 +324,30 @@ const styles = StyleSheet.create({
   },
   timePickerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'center',
-    height: 120,
     gap: 8,
+  },
+  timeColumnContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  timeColumnLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 4,
   },
   pickerColumn: {
     flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  timePickerColumn: {
+    width: 80,
+    height: 120,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     borderWidth: 1,

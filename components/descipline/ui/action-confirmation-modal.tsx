@@ -39,11 +39,11 @@ export function ActionConfirmationModal({
   // Toast state
   const [toastVisible, setToastVisible] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
-  const tokenSymbol = getTokenSymbol(challenge.tokenAllowed)
-  const decimals = getTokenDecimals(challenge.tokenAllowed)
+  const tokenSymbol = challenge.tokenAllowed === "USDC" ? "USDC" : "SOL"
+  const decimals = challenge.tokenAllowed === "USDC" ? 6 : 9
   const stakeAmount = Number(challenge.stakeAmount) / Math.pow(10, decimals)
   const fee = challenge.fee / 100 // Convert basis points to percentage
-  const isSOLChallenge = challenge.tokenAllowed.wsol // Check if this is a SOL challenge
+  const isSOLChallenge = challenge.tokenAllowed === "WSOL" // Check if this is a SOL challenge
   
   // Debug reward amount
   console.log('🎯 ActionConfirmationModal debug:', {
@@ -147,7 +147,7 @@ export function ActionConfirmationModal({
                   <View style={styles.statItem}>
                     <UiIconSymbol name="clock" size={14} color="rgba(255, 255, 255, 0.6)" />
                     <AppText style={styles.statText}>
-                      Ends {new Date(challenge.stakeEndAt.toNumber() * 1000).toLocaleDateString()}
+                      Ends {new Date(Number(challenge.stakeEndAt) * 1000).toLocaleDateString()}
                     </AppText>
                   </View>
                 </View>

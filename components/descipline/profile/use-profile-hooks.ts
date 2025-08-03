@@ -22,7 +22,7 @@ export function useUserCreatedChallenges() {
         challenge.initiator === account.publicKey?.toString()
       )
     },
-    enabled: !!account?.publicKey && !!allChallenges && !challengesLoading,
+    enabled: !!account?.publicKey,
     staleTime: 30000,
   })
 }
@@ -61,7 +61,7 @@ export function useUserStats() {
         totalEarned: 0, // TODO: Calculate from won challenges
       }
     },
-    enabled: !createdQuery.isLoading && !participatedQuery.isLoading,
+    enabled: true,
     staleTime: 30000,
   })
 }
