@@ -4,6 +4,26 @@ import { Buffer } from 'buffer'
 // Buffer for mobile
 global.Buffer = Buffer
 
+// structuredClone polyfill optimized for React Native and Anchor IDL
+if (typeof global.structuredClone === 'undefined') {
+  global.structuredClone = function(obj) {
+    try {
+      // For simple objects (like IDL), JSON method is sufficient and fast
+      return JSON.parse(JSON.stringify(obj))
+    } catch (error) {
+      console.warn('structuredClone fallback failed:', error)
+      // Fallback to simple object spread for React Native
+      if (Array.isArray(obj)) {
+        return [...obj]
+      }
+      if (obj && typeof obj === 'object') {
+        return { ...obj }
+      }
+      return obj
+    }
+  }
+}
+
 // Crypto for mobile  
 class Crypto {
   getRandomValues = expoCryptoGetRandomValues
