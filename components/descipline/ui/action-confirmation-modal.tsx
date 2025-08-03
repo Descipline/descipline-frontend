@@ -136,16 +136,7 @@ export function ActionConfirmationModal({
           </View>
 
           {/* Content */}
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            {/* Debug Info */}
-            {visible && mode === 'stake' && (
-              <View style={{ backgroundColor: 'red', padding: 10, marginBottom: 10 }}>
-                <AppText style={{ color: 'white' }}>DEBUG: Challenge Name: {challenge?.name || 'undefined'}</AppText>
-                <AppText style={{ color: 'white' }}>DEBUG: Stake Amount: {challenge?.stakeAmount || 'undefined'}</AppText>
-                <AppText style={{ color: 'white' }}>DEBUG: Token: {challenge?.tokenAllowed || 'undefined'}</AppText>
-              </View>
-            )}
-            
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={true}>
             {/* Challenge Info */}
             <View style={styles.section}>
               <AppText style={styles.sectionTitle}>Challenge Details</AppText>
