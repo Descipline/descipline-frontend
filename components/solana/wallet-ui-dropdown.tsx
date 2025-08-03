@@ -7,34 +7,39 @@ import { useCluster } from '@/components/cluster/cluster-provider'
 import { AppText } from '@/components/app-text'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
 import { SolanaColors } from '@/constants/colors'
-import { Button, ButtonProps } from 'react-native-paper'
 
 function BaseButton({
-  icon,
   label,
   onPress,
-  ...props
-}: Omit<ButtonProps, 'children'> & {
+  disabled = false,
+}: {
   label: string
   onPress: () => void
+  disabled?: boolean
 }) {
   return (
-    <Button mode="contained-tonal" icon={icon} onPress={onPress} {...props}>
-      {label}
-    </Button>
+    <TouchableOpacity
+      style={[styles.connectButton, disabled && styles.connectButtonDisabled]}
+      onPress={onPress}
+      disabled={disabled}
+      activeOpacity={0.8}
+    >
+      <UiIconSymbol name="wallet.pass.fill" size={16} color="#ffffff" />
+      <AppText style={styles.connectButtonText}>{label}</AppText>
+    </TouchableOpacity>
   )
 }
 
 export function WalletUiConnectButton({ label = 'Connect', then }: { label?: string; then?: () => void }) {
   const { connect } = useWalletUi()
 
-  return <BaseButton icon="wallet" label={label} onPress={() => connect().then(() => then?.())} />
+  return <BaseButton label={label} onPress={() => connect().then(() => then?.())} />
 }
 
 export function WalletUiDisconnectButton({ label = 'Disconnect', then }: { label?: string; then?: () => void }) {
   const { disconnect } = useWalletUi()
 
-  return <BaseButton icon="wallet" label={label} onPress={() => disconnect().then(() => then?.())} />
+  return <BaseButton label={label} onPress={() => disconnect().then(() => then?.())} />
 }
 
 export function WalletUiDropdown() {
@@ -207,6 +212,36 @@ export function WalletUiDropdown() {
 }
 
 const styles = StyleSheet.create({
+  // Connect Button Styles (matching amigo project exactly)
+  connectButton: {
+    borderWidth: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+    justifyContent: 'center',
+    backgroundColor: '#9945ff',  // SolanaColors.brand.purple
+    borderColor: '#9945ff',      // SolanaColors.brand.purple
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#9945ff',      // SolanaColors.brand.purple
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,  // Android shadow
+    gap: 8,
+    marginRight: 16,
+  },
+  connectButtonDisabled: {
+    opacity: 0.7,
+  },
+  connectButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
   walletButton: {
     flexDirection: 'row',
     alignItems: 'center',
