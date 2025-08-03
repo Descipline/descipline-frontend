@@ -5,6 +5,9 @@
 
 import { createSolanaClient, address } from 'gill'
 import { getDesciplinePublicKeys } from './constants'
+import { BorshCoder } from '@coral-xyz/anchor'
+import { PublicKey } from '@solana/web3.js'
+import { IDL } from './idl'
 
 // Types for challenge data
 export interface GillChallengeData {
@@ -49,41 +52,76 @@ function createGillClient(rpcUrl?: string) {
 }
 
 /**
- * Parse challenge account data from buffer
- * Simplified parsing for testing - assumes basic structure
+ * Parse challenge account data from buffer using real Borsh deserialization
  */
 function parseChallengeData(buffer: Buffer, publicKey: string): GillChallengeData | null {
   try {
-    // Basic validation
+    console.log(`🔍 Parsing challenge account ${publicKey.slice(0, 8)}: ${buffer.length} bytes`)
+    
+    // Basic validation - Challenge should be at least 100 bytes
     if (buffer.length < 100) {
-      return null // Too small to be a challenge
+      console.log(`⚠️ Account too small (${buffer.length} bytes), skipping`)
+      return null
     }
     
-    // For now, return a mock challenge with the account data size for testing
-    // In production, you'd implement proper Borsh deserialization
+    // Check discriminator first (8 bytes)
+    const expectedDiscriminator = [119, 250, 161, 121, 119, 81, 22, 208] // From IDL
+    const actualDiscriminator = Array.from(buffer.slice(0, 8))
+    
+    const discriminatorMatch = expectedDiscriminator.every((byte, i) => byte === actualDiscriminator[i])
+    if (!discriminatorMatch) {
+      console.log(`⚠️ Discriminator mismatch for ${publicKey.slice(0, 8)}:`)
+      console.log(`  Expected: [${expectedDiscriminator.join(', ')}]`)
+      console.log(`  Actual:   [${actualDiscriminator.join(', ')}]`)
+      return null
+    }
+    
+    console.log(`✅ Discriminator match for Challenge account ${publicKey.slice(0, 8)}`)
+    
+    // Create BorshCoder to deserialize
+    const coder = new BorshCoder(IDL)
+    
+    // Decode the account data
+    const decoded = coder.accounts.decode('Challenge', buffer)
+    console.log(`🎯 Successfully decoded Challenge data:`, {
+      name: decoded.name,
+      initiator: decoded.initiator.toString(),
+      tokenAllowed: decoded.tokenAllowed,
+      stakeAmount: decoded.stakeAmount.toString(),
+      fee: decoded.fee,
+      stakeEndAt: decoded.stakeEndAt.toString(),
+      claimStartFrom: decoded.claimStartFrom.toString(),
+      schema: decoded.schema.toString(),
+      attestor: decoded.attestor.toString(),
+      bump: decoded.bump
+    })
+    
+    // Convert to our interface format
     const challenge: GillChallengeData = {
       publicKey,
-      initiator: 'MockInitiator',
-      name: `Challenge_${publicKey.slice(0, 8)}`,
-      credentialPda: 'MockCredentialPda',
-      schemaPda: 'MockSchemaPda',
-      stakeMint: 'MockStakeMint',
-      tokenAllowed: Math.random() > 0.5 ? 'USDC' : 'WSOL',
-      stakeAmount: '1000000',
-      totalStaked: '5000000',
-      fee: 500,
-      stakeEndAt: (Date.now() / 1000 + 86400).toString(), // 24 hours from now
-      claimStartFrom: (Date.now() / 1000 + 86400 * 2).toString(), // 48 hours from now
-      nonce: 1,
-      isActive: true,
-      participantCount: Math.floor(Math.random() * 10)
+      initiator: decoded.initiator.toString(),
+      name: decoded.name,
+      credentialPda: decoded.schema.toString(), // Using schema as credential for now
+      schemaPda: decoded.schema.toString(),
+      stakeMint: decoded.tokenAllowed === 'USDC' ? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' : 'So11111111111111111111111111111111111111112', // Real token mints
+      tokenAllowed: decoded.tokenAllowed.hasOwnProperty('usdc') ? 'USDC' : 'WSOL',
+      stakeAmount: decoded.stakeAmount.toString(),
+      totalStaked: decoded.stakeAmount.toString(), // We don't track total staked in contract
+      fee: decoded.fee,
+      stakeEndAt: decoded.stakeEndAt.toString(),
+      claimStartFrom: decoded.claimStartFrom.toString(),
+      nonce: decoded.bump,
+      // Computed fields
+      isActive: Date.now() / 1000 < parseInt(decoded.stakeEndAt.toString()),
+      participantCount: 0 // Would need to fetch receipts separately
     }
     
-    console.log(`✅ Mock parsed challenge: ${challenge.name} (${buffer.length} bytes)`)
+    console.log(`✅ Real parsed challenge: ${challenge.name} (${buffer.length} bytes)`)
     return challenge
     
   } catch (error) {
-    console.error('❌ Failed to parse challenge data:', error)
+    console.error(`❌ Failed to parse challenge data for ${publicKey.slice(0, 8)}:`, error)
+    console.error(`❌ Error details:`, error.message)
     return null
   }
 }
@@ -129,10 +167,23 @@ export async function fetchChallengesWithGill(rpcUrl?: string): Promise<GillChal
     
     console.log('📊 Account sizes found:', Object.keys(sizeGroups).map(size => `${size} bytes: ${sizeGroups[parseInt(size)].length} accounts`))
     
-    // Assume the largest accounts are challenges (excluding very small ones like receipts)
-    const challengeCandidates = accountSizes.filter(acc => acc.size > 50) // Challenges should be reasonably large
+    // Filter by Challenge discriminator first
+    const challengeDiscriminator = [119, 250, 161, 121, 119, 81, 22, 208]
+    const challengeCandidates = accountSizes.filter(acc => {
+      if (acc.size < 100) return false // Too small for Challenge
+      
+      // Check discriminator
+      if (Array.isArray(acc.account.data) && acc.account.data.length >= 2) {
+        const buffer = Buffer.from(acc.account.data[0], acc.account.data[1] as BufferEncoding)
+        if (buffer.length >= 8) {
+          const actualDiscriminator = Array.from(buffer.slice(0, 8))
+          return challengeDiscriminator.every((byte, i) => byte === actualDiscriminator[i])
+        }
+      }
+      return false
+    })
     
-    console.log(`🔧 Found ${challengeCandidates.length} potential challenge accounts (size > 50 bytes)`)
+    console.log(`🔧 Found ${challengeCandidates.length} Challenge accounts (by discriminator)`)
     
     const challenges: GillChallengeData[] = []
     
