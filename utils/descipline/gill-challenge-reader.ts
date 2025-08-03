@@ -5,9 +5,7 @@
 
 import { createSolanaClient, address } from 'gill'
 import { getDesciplinePublicKeys } from './constants'
-import { BorshCoder } from '@coral-xyz/anchor'
 import { PublicKey } from '@solana/web3.js'
-import { IDL } from './idl'
 
 // Types for challenge data
 export interface GillChallengeData {
@@ -52,7 +50,18 @@ function createGillClient(rpcUrl?: string) {
 }
 
 /**
- * Parse challenge account data from buffer using real Borsh deserialization
+ * Parse challenge account data from buffer using manual parsing (React Native compatible)
+ * Based on Challenge struct from IDL:
+ * - name: string (4 bytes length + string data)
+ * - initiator: pubkey (32 bytes)
+ * - token_allowed: enum (1 byte)  
+ * - stake_amount: u64 (8 bytes)
+ * - fee: u16 (2 bytes)
+ * - stake_end_at: i64 (8 bytes)
+ * - claim_start_from: i64 (8 bytes)
+ * - schema: pubkey (32 bytes)
+ * - attestor: pubkey (32 bytes)
+ * - bump: u8 (1 byte)
  */
 function parseChallengeData(buffer: Buffer, publicKey: string): GillChallengeData | null {
   try {
@@ -78,49 +87,93 @@ function parseChallengeData(buffer: Buffer, publicKey: string): GillChallengeDat
     
     console.log(`✅ Discriminator match for Challenge account ${publicKey.slice(0, 8)}`)
     
-    // Create BorshCoder to deserialize
-    const coder = new BorshCoder(IDL)
+    // Manual parsing starting after discriminator (offset 8)
+    let offset = 8
     
-    // Decode the account data
-    const decoded = coder.accounts.decode('Challenge', buffer)
-    console.log(`🎯 Successfully decoded Challenge data:`, {
-      name: decoded.name,
-      initiator: decoded.initiator.toString(),
-      tokenAllowed: decoded.tokenAllowed,
-      stakeAmount: decoded.stakeAmount.toString(),
-      fee: decoded.fee,
-      stakeEndAt: decoded.stakeEndAt.toString(),
-      claimStartFrom: decoded.claimStartFrom.toString(),
-      schema: decoded.schema.toString(),
-      attestor: decoded.attestor.toString(),
-      bump: decoded.bump
+    // Parse name (string): 4 bytes length + string data
+    const nameLength = buffer.readUInt32LE(offset)
+    offset += 4
+    const nameBytes = buffer.slice(offset, offset + nameLength)
+    const name = nameBytes.toString('utf8')
+    offset += nameLength
+    
+    // Parse initiator (32 bytes pubkey)
+    const initiatorBytes = buffer.slice(offset, offset + 32)
+    const initiator = new PublicKey(initiatorBytes).toString()
+    offset += 32
+    
+    // Parse token_allowed (1 byte enum: 0 = WSOL, 1 = USDC)
+    const tokenAllowedByte = buffer.readUInt8(offset)
+    const tokenAllowed = tokenAllowedByte === 0 ? 'WSOL' : 'USDC'
+    offset += 1
+    
+    // Parse stake_amount (8 bytes u64)
+    const stakeAmount = buffer.readBigUInt64LE(offset).toString()
+    offset += 8
+    
+    // Parse fee (2 bytes u16)
+    const fee = buffer.readUInt16LE(offset)
+    offset += 2
+    
+    // Parse stake_end_at (8 bytes i64)
+    const stakeEndAt = buffer.readBigInt64LE(offset).toString()
+    offset += 8
+    
+    // Parse claim_start_from (8 bytes i64)
+    const claimStartFrom = buffer.readBigInt64LE(offset).toString()
+    offset += 8
+    
+    // Parse schema (32 bytes pubkey)
+    const schemaBytes = buffer.slice(offset, offset + 32)
+    const schema = new PublicKey(schemaBytes).toString()
+    offset += 32
+    
+    // Parse attestor (32 bytes pubkey)
+    const attestorBytes = buffer.slice(offset, offset + 32)
+    const attestor = new PublicKey(attestorBytes).toString()
+    offset += 32
+    
+    // Parse bump (1 byte u8)
+    const bump = buffer.readUInt8(offset)
+    
+    console.log(`🎯 Successfully manual parsed Challenge data:`, {
+      name,
+      initiator,
+      tokenAllowed,
+      stakeAmount,
+      fee,
+      stakeEndAt,
+      claimStartFrom,
+      schema,
+      attestor,
+      bump
     })
     
     // Convert to our interface format
     const challenge: GillChallengeData = {
       publicKey,
-      initiator: decoded.initiator.toString(),
-      name: decoded.name,
-      credentialPda: decoded.schema.toString(), // Using schema as credential for now
-      schemaPda: decoded.schema.toString(),
-      stakeMint: decoded.tokenAllowed === 'USDC' ? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' : 'So11111111111111111111111111111111111111112', // Real token mints
-      tokenAllowed: decoded.tokenAllowed.hasOwnProperty('usdc') ? 'USDC' : 'WSOL',
-      stakeAmount: decoded.stakeAmount.toString(),
-      totalStaked: decoded.stakeAmount.toString(), // We don't track total staked in contract
-      fee: decoded.fee,
-      stakeEndAt: decoded.stakeEndAt.toString(),
-      claimStartFrom: decoded.claimStartFrom.toString(),
-      nonce: decoded.bump,
+      initiator,
+      name,
+      credentialPda: schema, // Using schema as credential for now
+      schemaPda: schema,
+      stakeMint: tokenAllowed === 'USDC' ? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' : 'So11111111111111111111111111111111111111112',
+      tokenAllowed,
+      stakeAmount,
+      totalStaked: stakeAmount, // We don't track total staked in contract
+      fee,
+      stakeEndAt,
+      claimStartFrom,
+      nonce: bump,
       // Computed fields
-      isActive: Date.now() / 1000 < parseInt(decoded.stakeEndAt.toString()),
+      isActive: Date.now() / 1000 < parseInt(stakeEndAt),
       participantCount: 0 // Would need to fetch receipts separately
     }
     
-    console.log(`✅ Real parsed challenge: ${challenge.name} (${buffer.length} bytes)`)
+    console.log(`✅ Manual parsed challenge: ${challenge.name} (${buffer.length} bytes)`)
     return challenge
     
   } catch (error) {
-    console.error(`❌ Failed to parse challenge data for ${publicKey.slice(0, 8)}:`, error)
+    console.error(`❌ Failed to manually parse challenge data for ${publicKey.slice(0, 8)}:`, error)
     console.error(`❌ Error details:`, error.message)
     return null
   }
