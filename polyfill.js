@@ -1,8 +1,10 @@
 import { getRandomValues as expoCryptoGetRandomValues } from 'expo-crypto'
 import { Buffer } from 'buffer'
+import BN from 'bn.js'
 
 // Essential polyfills for Solana/Anchor on React Native
 global.Buffer = Buffer
+global.BN = BN
 
 // TextEncoder polyfill - required for Solana
 if (typeof global.TextEncoder === 'undefined') {

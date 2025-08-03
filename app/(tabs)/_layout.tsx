@@ -29,12 +29,12 @@ export default function TabLayout() {
       {/* The index redirects to the account screen */}
       <Tabs.Screen name="index" options={{ tabBarItemStyle: { display: 'none' } }} />
       
-      {/* Account - main wallet functionality */}
+      {/* Home - main landing page */}
       <Tabs.Screen 
         name="account" 
         options={{
-          title: 'Account',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="wallet.pass.fill" color={color} />,
+          title: 'Home',
+          tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="house.fill" color={color} />,
         }}
       />
       
@@ -47,12 +47,12 @@ export default function TabLayout() {
         }}
       />
       
-      {/* Settings */}
+      {/* Profile */}
       <Tabs.Screen 
         name="settings" 
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="gearshape.fill" color={color} />,
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="person.fill" color={color} />,
         }}
       />
     </Tabs>
