@@ -34,6 +34,39 @@ const MAPPING = {
   'person.2.fill': 'group',
   'star.fill': 'star',
   'arrow.right': 'arrow-forward',
+  // Create challenge page icons
+  'info.circle.fill': 'info',
+  'pencil': 'edit',
+  'banknote': 'money',
+  'percent': 'percent',
+  'calendar': 'calendar-today',
+  'chevron.down': 'keyboard-arrow-down',
+  'play.fill': 'play-arrow',
+  'stop.fill': 'stop',
+  'gift.fill': 'card-giftcard',
+  'plus.circle.fill': 'add-circle',
+  'chevron.left': 'chevron-left',
+  // Success and modal icons
+  'eye.fill': 'visibility',
+  'plus.circle': 'add-circle-outline',
+  'list.bullet': 'list',
+  '1.circle.fill': 'looks-one',
+  '2.circle.fill': 'looks-two',
+  '3.circle.fill': 'looks-3',
+  // Modal and confirmation icons
+  'doc.on.doc': 'content-copy',
+  'xmark': 'close',
+  'person.3.fill': 'group',
+  'clock': 'access-time',
+  'crown.fill': 'emoji-events',
+  'arrow.triangle.2.circlepath': 'sync',
+  'exclamationmark.triangle.fill': 'warning',
+  // Status and participation icons
+  'person.3': 'group',
+  'checkmark.shield.fill': 'verified',
+  'gift': 'card-giftcard',
+  'flag.fill': 'flag',
+  'clock.arrow.circlepath': 'update',
 } as UiIconMapping
 
 /**

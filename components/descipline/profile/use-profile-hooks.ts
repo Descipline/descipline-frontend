@@ -11,18 +11,32 @@ export interface UserStats {
 
 export function useUserCreatedChallenges() {
   const { account } = useAuth()
-  const { data: allChallenges, isLoading: challengesLoading } = useGetChallengesWithGill()
+  const { data: allChallenges, isLoading: challengesLoading, error: challengesError } = useGetChallengesWithGill()
 
   return useQuery({
-    queryKey: ['userCreatedChallenges', account?.publicKey?.toString()],
+    queryKey: ['userCreatedChallenges', account?.publicKey?.toString(), allChallenges?.length],
     queryFn: () => {
-      if (!account?.publicKey || !allChallenges) return []
+      console.log('🔍 Profile: Running useUserCreatedChallenges queryFn')
+      console.log('👤 Profile: Account:', account?.publicKey?.toString())
+      console.log('📊 Profile: All challenges loaded:', allChallenges?.length || 0)
+      console.log('⏳ Profile: Challenges loading:', challengesLoading)
+      console.log('❌ Profile: Challenges error:', challengesError)
       
-      return allChallenges.filter(challenge => 
+      if (!account?.publicKey || !allChallenges) {
+        console.log('⚠️ Profile: Missing account or challenges data')
+        return []
+      }
+      
+      const userChallenges = allChallenges.filter(challenge => 
         challenge.initiator === account.publicKey?.toString()
       )
+      
+      console.log(`✅ Profile: Found ${userChallenges.length} created challenges for user`)
+      console.log('📝 Profile: Created challenges:', userChallenges.map(c => ({ name: c.name, initiator: c.initiator })))
+      
+      return userChallenges
     },
-    enabled: !!account?.publicKey,
+    enabled: !!account?.publicKey && !!allChallenges && !challengesLoading,
     staleTime: 30000,
   })
 }
@@ -49,19 +63,28 @@ export function useUserStats() {
   const participatedQuery = useUserParticipatedChallenges()
 
   return useQuery({
-    queryKey: ['userStats', createdQuery.data, participatedQuery.data],
+    queryKey: ['userStats', createdQuery.data?.length, participatedQuery.data?.length],
     queryFn: (): UserStats => {
+      console.log('📊 Profile: Running useUserStats queryFn')
+      console.log('📈 Profile: Created query data:', createdQuery.data?.length || 0)
+      console.log('📈 Profile: Participated query data:', participatedQuery.data?.length || 0)
+      console.log('📈 Profile: Created query loading:', createdQuery.isLoading)
+      console.log('📈 Profile: Participated query loading:', participatedQuery.isLoading)
+      
       const created = createdQuery.data || []
       const participated = participatedQuery.data || []
       
-      return {
+      const stats = {
         totalCreated: created.length,
         totalParticipated: participated.length,
         totalWon: participated.filter(c => (c as any).userStatus === 'winner').length,
         totalEarned: 0, // TODO: Calculate from won challenges
       }
+      
+      console.log('✅ Profile: Generated stats:', stats)
+      return stats
     },
-    enabled: true,
+    enabled: !createdQuery.isLoading && !participatedQuery.isLoading,
     staleTime: 30000,
   })
 }

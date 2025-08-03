@@ -31,8 +31,7 @@ export function useGetChallengesWithGill() {
       }
     },
     enabled: !!selectedCluster?.endpoint,
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 60000, // Refetch every minute
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }
 

@@ -318,7 +318,7 @@ export default function ChallengeDetailScreen() {
         visible={showStakeModal}
         onClose={() => setShowStakeModal(false)}
         onConfirm={handleStakeConfirm}
-        challenge={challenge}
+        challenge={{...challenge, publicKey: id}} // Add publicKey from route params
         creatorAddress={challenge.initiator}
         loading={isStaking}
         realParticipantCount={challengeData.participants.length}
@@ -330,7 +330,7 @@ export default function ChallengeDetailScreen() {
         visible={showClaimModal}
         onClose={() => setShowClaimModal(false)}
         onConfirm={handleClaimConfirm}
-        challenge={challenge}
+        challenge={{...challenge, publicKey: id}} // Add publicKey from route params
         creatorAddress={challenge.initiator}
         loading={isClaiming}
         realParticipantCount={challengeData.participants.length}
