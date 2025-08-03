@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "descipline-dapp-mobile",
+    "name": "Descipline",
     "slug": "descipline-dapp-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/adaptive-icon.png",
+    "icon": "./assets/images/logo-desktop.png",
     "scheme": "templateexpobasic",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

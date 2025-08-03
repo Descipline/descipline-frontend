@@ -370,31 +370,6 @@ export default function Home() {
           </View>
         </View>
 
-        {/* Recent Challenges */}
-        {recentChallenges.length > 0 && (
-          <View style={styles.challengesSection}>
-            <View style={styles.sectionHeader}>
-              <AppText style={styles.sectionTitle}>Live Challenges</AppText>
-              <TouchableOpacity 
-                onPress={() => router.push('/challenges')}
-                style={styles.viewAllButton}
-                activeOpacity={0.7}
-              >
-                <AppText style={styles.viewAllText}>View All</AppText>
-                <UiIconSymbol name="arrow.right" size={16} color={SolanaColors.brand.purple} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.challengesList}>
-              {recentChallenges.map((challenge) => (
-                <ChallengeCard
-                  key={challenge.publicKey}
-                  challenge={challenge}
-                  onPress={() => router.push(`/challenges/detail?id=${challenge.publicKey}`)}
-                />
-              ))}
-            </View>
-          </View>
-        )}
 
         {/* Bottom CTA */}
         <View style={styles.bottomCTA}>
