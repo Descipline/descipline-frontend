@@ -1,15 +1,40 @@
 import { PublicKey } from '@solana/web3.js'
 
+// Address constants as strings to avoid early PublicKey construction
+const ADDRESSES = {
+  PROGRAM_ID: 'J5qn6hBAMS1YfNpN7oARJZmdjSqnsMT5Zz33tHGmLiK',
+  CREDENTIAL_PDA: '9XoDadoNQS14omZ8UP3xQFGXxFDoYwCdPBUDzQLRoX8f',
+  CREDENTIAL_AUTHORITY_PDA: '6vso4DAqcnGnoWjBWU6L4RsgMmRLndX6vjntjH4zhtUa',
+  SCHEMA_PDA: 'J2XusujyFzjnLU5cCTJALQgzyzH4dX4en3rZPZYaTUKc',
+  PLATFORM_ATTESTER: 'H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq',
+  USDC_MINT: '4NQMuSBhVrqTh8FMv5AbHvADVwHSnxrHNERPdAFu5B8p',
+  WSOL_MINT: 'So11111111111111111111111111111111111111112',
+} as const
+
+// Lazy initialization function to create PublicKeys when needed
+export function getDesciplinePublicKeys() {
+  return {
+    PROGRAM_ID: new PublicKey(ADDRESSES.PROGRAM_ID),
+    CREDENTIAL_PDA: new PublicKey(ADDRESSES.CREDENTIAL_PDA),
+    CREDENTIAL_AUTHORITY_PDA: new PublicKey(ADDRESSES.CREDENTIAL_AUTHORITY_PDA),
+    SCHEMA_PDA: new PublicKey(ADDRESSES.SCHEMA_PDA),
+    PLATFORM_ATTESTER: new PublicKey(ADDRESSES.PLATFORM_ATTESTER),
+    USDC_MINT: new PublicKey(ADDRESSES.USDC_MINT),
+    WSOL_MINT: new PublicKey(ADDRESSES.WSOL_MINT),
+  }
+}
+
 export const DESCIPLINE_CONFIG = {
-  PROGRAM_ID: new PublicKey('J5qn6hBAMS1YfNpN7oARJZmdjSqnsMT5Zz33tHGmLiK'),
+  // Use address strings instead of PublicKey objects
+  PROGRAM_ID_STRING: ADDRESSES.PROGRAM_ID,
   HELIUS_API_KEY: process.env.EXPO_PUBLIC_HELIUS_API_KEY || '',
   
   // SAS (Solana Attestation Service) Configuration - From devnet scripts
-  CREDENTIAL_PDA: new PublicKey('9XoDadoNQS14omZ8UP3xQFGXxFDoYwCdPBUDzQLRoX8f'),
-  CREDENTIAL_AUTHORITY_PDA: new PublicKey('6vso4DAqcnGnoWjBWU6L4RsgMmRLndX6vjntjH4zhtUa'),
-  SCHEMA_PDA: new PublicKey('J2XusujyFzjnLU5cCTJALQgzyzH4dX4en3rZPZYaTUKc'),
+  CREDENTIAL_PDA_STRING: ADDRESSES.CREDENTIAL_PDA,
+  CREDENTIAL_AUTHORITY_PDA_STRING: ADDRESSES.CREDENTIAL_AUTHORITY_PDA,
+  SCHEMA_PDA_STRING: ADDRESSES.SCHEMA_PDA,
   CREDENTIAL_NAME: 'DESCIPLINE-OFFICIAL-ORANGE',
-  PLATFORM_ATTESTER: new PublicKey('H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq'), // deployer wallet
+  PLATFORM_ATTESTER_STRING: ADDRESSES.PLATFORM_ATTESTER,
   
   // PDA seeds
   CREDENTIAL_AUTHORITY_SEED: 'authority',
@@ -17,15 +42,15 @@ export const DESCIPLINE_CONFIG = {
   RECEIPT_SEED: 'receipt',
   RESOLUTION_SEED: 'resolution',
   
-  // Supported tokens
+  // Supported tokens - using strings instead of PublicKey objects
   SUPPORTED_TOKENS: {
     USDC: {
-      mint: new PublicKey('4NQMuSBhVrqTh8FMv5AbHvADVwHSnxrHNERPdAFu5B8p'),
+      mint: ADDRESSES.USDC_MINT,
       decimals: 6,
       symbol: 'USDC',
     },
     WSOL: {
-      mint: new PublicKey('So11111111111111111111111111111111111111112'),
+      mint: ADDRESSES.WSOL_MINT,
       decimals: 9,
       symbol: 'wSOL',
     },

@@ -5,7 +5,7 @@
 
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import { BorshCoder, BN } from '@coral-xyz/anchor'
-import { DESCIPLINE_CONFIG } from './constants'
+import { DESCIPLINE_CONFIG, getDesciplinePublicKeys } from './constants'
 
 // Types
 export interface ChallengeAccount {
@@ -36,9 +36,12 @@ export async function fetchAllChallenges(connection: Connection): Promise<Challe
   try {
     console.log('📱 Fetching challenges using mobile-friendly method...')
     
+    // Get program ID lazily to avoid BN initialization errors
+    const { PROGRAM_ID } = getDesciplinePublicKeys()
+    
     // Get all accounts owned by the program
     const accounts = await connection.getProgramAccounts(
-      DESCIPLINE_CONFIG.PROGRAM_ID,
+      PROGRAM_ID,
       {
         filters: [
           // Challenge accounts have a specific size
@@ -101,6 +104,9 @@ export async function fetchAllChallenges(connection: Connection): Promise<Challe
  */
 export async function fetchChallengesViaRPC(connection: Connection): Promise<any[]> {
   try {
+    // Get program ID lazily to avoid BN initialization errors
+    const { PROGRAM_ID } = getDesciplinePublicKeys()
+    
     const response = await fetch(connection.rpcEndpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -109,7 +115,7 @@ export async function fetchChallengesViaRPC(connection: Connection): Promise<any
         id: 1,
         method: 'getProgramAccounts',
         params: [
-          DESCIPLINE_CONFIG.PROGRAM_ID.toString(),
+          PROGRAM_ID.toString(),
           {
             encoding: 'jsonParsed',
             filters: []

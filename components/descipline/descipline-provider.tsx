@@ -3,18 +3,19 @@ import { Program, AnchorProvider } from '@coral-xyz/anchor'
 import { PublicKey } from '@solana/web3.js'
 import { useAnchorWallet } from '@/hooks/use-anchor-wallet'
 import { useConnection } from '@/components/solana/solana-provider'
-import { DESCIPLINE_CONFIG } from '@/utils/descipline/constants'
+import { DESCIPLINE_CONFIG, getDesciplinePublicKeys } from '@/utils/descipline/constants'
 import { Descipline } from '@/utils/descipline/descipline'
 import { IDL } from '@/utils/descipline/idl'
 
 interface DesciplineContextType {
   program: Program<Descipline> | null
-  programId: PublicKey
+  programId: PublicKey | null
 }
 
+// Initialize context with null to avoid early PublicKey creation
 const DesciplineContext = createContext<DesciplineContextType>({
   program: null,
-  programId: DESCIPLINE_CONFIG.PROGRAM_ID,
+  programId: null,
 })
 
 export function DesciplineProvider({ children }: { children: React.ReactNode }) {
@@ -30,69 +31,87 @@ export function DesciplineProvider({ children }: { children: React.ReactNode }) 
     }
 
     try {
-      console.log('🔄 Creating Anchor program for template architecture...')
+      console.log('🔄 Creating Anchor program for React Native...')
       
-      // Check if required globals are available
+      // Wait for polyfills to be ready
       if (typeof global.Buffer === 'undefined') {
-        console.error('❌ Buffer not found in global scope')
+        console.error('❌ Buffer polyfill not ready')
         return null
       }
       
       if (typeof global.TextEncoder === 'undefined') {
-        console.error('❌ TextEncoder not found in global scope')
+        console.error('❌ TextEncoder polyfill not ready')
         return null
       }
       
-      // Safely create program ID from constants with explicit string
-      const programIdString = 'J5qn6hBAMS1YfNpN7oARJZmdjSqnsMT5Zz33tHGmLiK'
-      const programId = new PublicKey(programIdString)
-      console.log('✅ Program ID created:', programId.toString())
+      // Lazy initialize PublicKeys to avoid BN errors during module loading
+      const publicKeys = getDesciplinePublicKeys()
+      const programId = publicKeys.PROGRAM_ID
+      console.log('✅ Program ID created lazily:', programId.toString())
       
-      // Create a dummy wallet for read-only operations
+      // Create a minimal dummy wallet for read-only operations
+      // Use a different address to avoid confusion with program ID
       const dummyWallet = {
-        publicKey: programId, // Use the programId we just created
-        signTransaction: () => Promise.reject(new Error('Read-only mode - no signing available')),
-        signAllTransactions: () => Promise.reject(new Error('Read-only mode - no signing available')),
+        publicKey: publicKeys.PLATFORM_ATTESTER, // Use a valid address
+        signTransaction: () => Promise.reject(new Error('Read-only mode')),
+        signAllTransactions: () => Promise.reject(new Error('Read-only mode')),
       }
 
-      // Use anchor wallet if available, otherwise use dummy wallet
+      // Use the actual wallet if connected, otherwise dummy wallet
       const wallet = anchorWallet || dummyWallet
 
-      // Create provider with React Native compatible setup
+      // Create AnchorProvider with proper error handling
       const provider = new AnchorProvider(
         connection,
         wallet as any,
-        { commitment: DESCIPLINE_CONFIG.DEFAULT_COMMITMENT }
+        { 
+          commitment: DESCIPLINE_CONFIG.DEFAULT_COMMITMENT,
+          preflightCommitment: 'confirmed',
+          skipPreflight: false
+        }
       )
 
-      // Create program - React Native compatible
-      // For Anchor v0.31.1, we need to pass the IDL differently
+      // Create Anchor program following 0.31.0 best practices
+      // Based on Stack Overflow solutions: use newer Program constructor format
       const program = new Program(
-        IDL as any,
+        IDL,
         programId,
         provider
       ) as Program<Descipline>
       
-      const mode = anchorWallet ? 'full' : 'read-only'
-      console.log(`✅ Descipline Program created successfully in ${mode} mode`)
+      const mode = anchorWallet ? 'full-wallet' : 'read-only'
+      console.log(`✅ Anchor Program initialized successfully in ${mode} mode`)
+      console.log(`✅ Program address: ${programId.toString()}`)
+      
       return program
       
     } catch (error: any) {
       console.error('❌ Failed to create Anchor program:', error)
       console.error('❌ Error details:', {
         message: error.message,
-        stack: error.stack,
+        stack: error.stack?.slice(0, 500), // Limit stack trace length
         name: error.name
       })
+      
+      // Additional debugging for BN-specific errors
+      if (error.message?.includes('_bn') || error.message?.includes('BN')) {
+        console.error('❌ This appears to be a BN initialization error')
+        console.error('❌ Check that all address strings in IDL are valid PublicKeys')
+      }
+      
       return null
     }
   }, [connection, anchorWallet])
 
   const value = useMemo(
-    () => ({
-      program,
-      programId: new PublicKey('J5qn6hBAMS1YfNpN7oARJZmdjSqnsMT5Zz33tHGmLiK'),
-    }),
+    () => {
+      // Lazy create programId to match the program creation pattern
+      const publicKeys = getDesciplinePublicKeys()
+      return {
+        program,
+        programId: publicKeys.PROGRAM_ID,
+      }
+    },
     [program]
   )
 

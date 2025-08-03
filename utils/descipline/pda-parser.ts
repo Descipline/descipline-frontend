@@ -1,5 +1,5 @@
 import { PublicKey } from '@solana/web3.js'
-import { DESCIPLINE_CONFIG } from './constants'
+import { DESCIPLINE_CONFIG, getDesciplinePublicKeys } from './constants'
 
 /**
  * 从 Receipt PDA 中提取参与者的钱包地址
@@ -36,13 +36,14 @@ export function verifyReceiptPdaForChallenger(
   expectedReceiptPda: PublicKey
 ): boolean {
   try {
+    const { PROGRAM_ID } = getDesciplinePublicKeys()
     const [derivedReceiptPda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from('receipt'),
         challengePda.toBuffer(),
         challengerPda.toBuffer()
       ],
-      DESCIPLINE_CONFIG.PROGRAM_ID
+      PROGRAM_ID
     )
     
     return derivedReceiptPda.equals(expectedReceiptPda)
