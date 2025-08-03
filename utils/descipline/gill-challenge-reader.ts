@@ -105,8 +105,9 @@ export async function fetchChallengesWithGill(rpcUrl?: string): Promise<GillChal
       {
         encoding: 'base64',
         filters: [
-          // Filter by account size - challenges are larger than receipts
-          { dataSize: { min: 150, max: 500 } }
+          // Filter by exact Challenge account size (based on contract struct)
+          // Challenge: 8 (discriminator) + ~159 (struct) = ~167 bytes
+          { dataSize: 167 } // Exact challenge size from contract
         ]
       }
     ).send()
@@ -206,8 +207,9 @@ export async function fetchReceiptsForChallengeWithGill(
       {
         encoding: 'base64',
         filters: [
-          // Filter by smaller account size - receipts are smaller than challenges
-          { dataSize: { min: 20, max: 100 } }
+          // Filter by exact Receipt account size (based on contract struct)  
+          // Receipt: 8 (discriminator) + 1 (bump) = 9 bytes
+          { dataSize: 9 } // Exact receipt size from contract
         ]
       }
     ).send()
@@ -270,11 +272,11 @@ export async function getProgramStatsWithGill(rpcUrl?: string): Promise<GillStat
     
     console.log(`🔧 Found ${allAccounts.length} total program accounts`)
     
-    // Categorize by account size
+    // Categorize by exact account size based on contract structs
     const challenges = allAccounts.filter(acc => {
       if (Array.isArray(acc.account.data) && acc.account.data.length >= 2) {
         const size = Buffer.from(acc.account.data[0], acc.account.data[1] as BufferEncoding).length
-        return size > 150 // Challenges are larger
+        return size === 167 // Exact Challenge size
       }
       return false
     })
@@ -282,7 +284,7 @@ export async function getProgramStatsWithGill(rpcUrl?: string): Promise<GillStat
     const receipts = allAccounts.filter(acc => {
       if (Array.isArray(acc.account.data) && acc.account.data.length >= 2) {
         const size = Buffer.from(acc.account.data[0], acc.account.data[1] as BufferEncoding).length
-        return size <= 100 && size > 20 // Receipts are smaller
+        return size === 9 // Exact Receipt size
       }
       return false
     })
