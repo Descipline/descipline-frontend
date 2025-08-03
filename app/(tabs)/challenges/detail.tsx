@@ -6,8 +6,10 @@ import { ActivityIndicator } from 'react-native'
 import { SolanaColors } from '@/constants/colors'
 import { useGetChallengeWithGill } from '@/components/descipline/use-gill-challenge-hooks'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useWalletGuard } from '@/hooks/use-wallet-guard'
 
 export default function ChallengeDetailScreen() {
+  useWalletGuard()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   

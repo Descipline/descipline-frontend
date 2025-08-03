@@ -4,8 +4,10 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { AppView } from '@/components/app-view'
 import { ChallengeFeature } from '@/components/descipline/challenge-feature'
 import { SolanaColors } from '@/constants/colors'
+import { useWalletGuard } from '@/hooks/use-wallet-guard'
 
 export default function ChallengesScreen() {
+  useWalletGuard()
   return (
     <AppView style={styles.container}>
       <LinearGradient

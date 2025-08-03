@@ -7,6 +7,7 @@ import { AppText } from '@/components/app-text'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
 import { SolanaColors } from '@/constants/colors'
 import { useAuth } from '@/components/auth/auth-provider'
+import { handlePostLoginRedirect } from '@/hooks/use-wallet-guard'
 
 export default function SignInScreen() {
   const router = useRouter()
@@ -26,8 +27,8 @@ export default function SignInScreen() {
   // Auto-redirect when connected
   useEffect(() => {
     if (account) {
-      console.log('Wallet connected, redirecting to home')
-      router.replace('/(tabs)/')
+      console.log('Wallet connected, handling redirect')
+      handlePostLoginRedirect(router)
     }
   }, [account, router])
 
