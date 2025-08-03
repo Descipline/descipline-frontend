@@ -2,12 +2,22 @@ import { Tabs } from 'expo-router'
 import React from 'react'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
 import { SolanaColors } from '@/constants/colors'
+import { WalletUiDropdown } from '@/components/solana/wallet-ui-dropdown'
 
 export default function TabLayout() {
   return (
     <Tabs 
       screenOptions={{ 
-        headerShown: false,
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: SolanaColors.brand.dark,
+        },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: {
+          color: '#ffffff',
+          fontWeight: '600',
+        },
+        headerRight: () => <WalletUiDropdown />,
         tabBarStyle: {
           backgroundColor: SolanaColors.brand.dark,
           borderTopColor: 'rgba(255, 255, 255, 0.1)',
