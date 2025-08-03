@@ -358,6 +358,7 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 480,
     maxHeight: '85%',
+    minHeight: 400,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
@@ -395,6 +396,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 24,
+    minHeight: 300,
   },
   section: {
     marginBottom: 24,

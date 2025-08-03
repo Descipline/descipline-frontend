@@ -4,7 +4,7 @@
     "slug": "descipline-dapp-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/adaptive-icon.png",
     "scheme": "templateexpobasic",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -29,9 +29,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FFFFFF",
+          "backgroundColor": "#1a0d2e",
           "dark": {
-            "backgroundColor": "#000000",
+            "backgroundColor": "#1a0d2e",
             "image": "./assets/images/splash-icon.png"
           },
           "image": "./assets/images/splash-icon.png",

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { View, ScrollView, StyleSheet, Dimensions, Animated, ImageBackground } from 'react-native'
+import { View, ScrollView, StyleSheet, Dimensions, Animated, ImageBackground, Image } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import { AppText } from '@/components/app-text'
@@ -9,6 +9,7 @@ import { TouchableOpacity } from 'react-native'
 import { useGetChallengesWithGill } from '@/components/descipline/use-gill-challenge-hooks'
 import { ChallengeCard } from '@/components/descipline/challenge-card'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
+import { TargetIcon, LockIcon, CheckmarkIcon, TrophyIcon } from '@/components/ui/step-icons'
 
 const { width, height } = Dimensions.get('window')
 
@@ -133,10 +134,10 @@ interface StepCardProps {
   step: number
   title: string
   description: string
-  icon?: string
+  IconComponent: React.ComponentType<{ size?: number }>
 }
 
-function StepCard({ step, title, description, icon }: StepCardProps) {
+function StepCard({ step, title, description, IconComponent }: StepCardProps) {
   return (
     <View style={styles.stepCard}>
       <View style={styles.stepNumber}>
@@ -145,7 +146,9 @@ function StepCard({ step, title, description, icon }: StepCardProps) {
       <View style={styles.stepContent}>
         <View style={styles.stepHeader}>
           <AppText style={styles.stepTitle}>{title}</AppText>
-          {icon && <AppText style={styles.stepIcon}>{icon}</AppText>}
+          <View style={styles.stepIconContainer}>
+            <IconComponent size={32} />
+          </View>
         </View>
         <AppText style={styles.stepDescription}>{description}</AppText>
       </View>
@@ -226,6 +229,14 @@ export default function Home() {
               />
               <UiIconSymbol name="sparkles" size={16} color="#ffffff" />
               <AppText style={styles.heroBadgeText}>Built on Solana</AppText>
+            </View>
+            
+            <View style={styles.logoContainer}>
+              <Image 
+                source={require('@/assets/images/adaptive-icon.png')} 
+                style={styles.logo}
+                resizeMode="contain"
+              />
             </View>
             
             <AppText style={styles.heroTitle}>DESCIPLINE</AppText>
@@ -309,25 +320,25 @@ export default function Home() {
               step={1}
               title="Set Your Challenge"
               description="Define your goal and set the stakes. The bigger the commitment, the stronger the motivation."
-              icon="🎯"
+              IconComponent={TargetIcon}
             />
             <StepCard
               step={2}
               title="Lock Your Stake"
               description="Put your money where your mouth is. Stake USDC or SOL to join the challenge."
-              icon="🔒"
+              IconComponent={LockIcon}
             />
             <StepCard
               step={3}
               title="Prove Your Progress"
               description="Submit verifiable proof of completion through our attestation system."
-              icon="✅"
+              IconComponent={CheckmarkIcon}
             />
             <StepCard
               step={4}
               title="Claim Your Rewards"
               description="Winners get their stake back plus a share of what the quitters lost."
-              icon="🏆"
+              IconComponent={TrophyIcon}
             />
           </View>
         </View>
@@ -434,6 +445,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
     marginLeft: 8,
+  },
+  logoContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 80,
+    height: 80,
   },
   heroTitle: {
     fontSize: Math.min(48, width * 0.12),
@@ -592,8 +611,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#ffffff',
   },
-  stepIcon: {
-    fontSize: 24,
+  stepIconContainer: {
     marginLeft: 8,
   },
   stepDescription: {

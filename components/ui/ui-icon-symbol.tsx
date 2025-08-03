@@ -79,6 +79,7 @@ const MAPPING = {
   'sparkles': 'auto-awesome',
   'rocket.fill': 'rocket-launch',
   'shield.checkered': 'security',
+  'checkmark.seal.fill': 'verified',
 } as UiIconMapping
 
 /**
