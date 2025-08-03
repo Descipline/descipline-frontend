@@ -15,6 +15,7 @@ export default function ChallengesLayout() {
           fontWeight: '600',
         },
         headerBackTitleVisible: false,
+        presentation: 'card',
       }}
     >
       <Stack.Screen
@@ -31,7 +32,6 @@ export default function ChallengesLayout() {
           title: 'Challenge Details',
           headerShown: true,
           headerRight: () => <WalletUiDropdown />,
-          tabBarStyle: { display: 'none' },
         }}
       />
       <Stack.Screen
@@ -40,7 +40,6 @@ export default function ChallengesLayout() {
           title: 'Create Challenge',
           headerShown: true,
           headerRight: () => <WalletUiDropdown />,
-          tabBarStyle: { display: 'none' },
         }}
       />
     </Stack>

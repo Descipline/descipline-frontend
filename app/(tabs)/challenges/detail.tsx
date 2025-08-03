@@ -1,10 +1,10 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useLayoutEffect } from 'react'
 import { ScrollView, RefreshControl, View, StyleSheet } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { AppView } from '@/components/app-view'
 import { AppText } from '@/components/app-text'
 import { useGetChallengeWithGill } from '@/components/descipline/use-gill-challenge-hooks'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useNavigation } from 'expo-router'
 import { useWalletGuard } from '@/hooks/use-wallet-guard'
 import { useAuth } from '@/components/auth/auth-provider'
 import { SolanaColors } from '@/constants/colors'
@@ -55,6 +55,23 @@ export default function ChallengeDetailScreen() {
   useWalletGuard()
   const { id } = useLocalSearchParams<{ id: string }>()
   const { account } = useAuth()
+  const navigation = useNavigation()
+
+  // Hide tab bar for this screen
+  useLayoutEffect(() => {
+    navigation.getParent()?.setOptions({
+      tabBarStyle: { display: 'none' }
+    })
+    
+    return () => {
+      navigation.getParent()?.setOptions({
+        tabBarStyle: {
+          backgroundColor: SolanaColors.brand.dark,
+          borderTopColor: 'rgba(255, 255, 255, 0.1)',
+        }
+      })
+    }
+  }, [navigation])
   
   const { 
     data: challenge, 
