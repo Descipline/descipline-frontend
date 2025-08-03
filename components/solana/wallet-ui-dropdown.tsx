@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-start',
     alignItems: 'flex-end',
-    paddingTop: 120,
+    paddingTop: 60,
     paddingRight: 16,
   },
   dropdownContainer: {
