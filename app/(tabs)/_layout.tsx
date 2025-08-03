@@ -44,6 +44,7 @@ export default function TabLayout() {
         options={{
           title: 'Challenges',
           tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="trophy.fill" color={color} />,
+          headerShown: false, // Let Stack Navigation handle headers
         }}
       />
       
