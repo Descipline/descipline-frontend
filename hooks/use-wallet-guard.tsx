@@ -34,7 +34,7 @@ export function useWalletGuard() {
         AsyncStorage.setItem(REDIRECT_KEY, pathname).catch(console.error)
       }
       
-      console.log(`🔒 Wallet guard: Redirecting from ${pathname} to /sign-in`)
+      console.log(`🔒 Wallet guard: Redirecting from ${pathname} to /sign-in (wallet not connected)`)
       router.replace('/sign-in')
     }
 

@@ -95,6 +95,23 @@ Migrating Descipline functionality from `amigo-sol-dapp` to the new `descipline-
 - [x] Sign-in page exactly replicated from amigo
 - [x] Navigation structure updated and working
 
+### Phase 12: UI Polish & Bug Fixes 🎨 ✅
+- [x] Remove DesciplineProvider to fix BN errors
+- [x] Update sign-in button text to "CONNECT"
+- [x] Remove debug info from sign-in page
+- [x] Add missing icon mappings for navigation
+- [x] Fix Profile page null check issues
+- [x] Remove account and settings folders from tabs
+
+### Phase 13: Challenge Detail Page Enhancement 🏗️ ✅
+- [x] Create ChallengeStatusBadge component exactly matching amigo
+- [x] Create UserParticipationCard component with amigo styling
+- [x] Create ParticipantsList component with amigo layout
+- [x] Completely rewrite challenge detail page with amigo design
+- [x] Implement exact amigo layout: header card, participation card, details, creator info, participants
+- [x] Use LinearGradient exactly as in amigo
+- [x] Mock stake and claim handlers (ready for transaction implementation)
+
 ## 🎉 Migration Status: COMPLETE
 
 ### ✅ Successfully Migrated

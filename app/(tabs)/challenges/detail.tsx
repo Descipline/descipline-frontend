@@ -1,287 +1,500 @@
-import React from 'react'
-import { View, ScrollView, TouchableOpacity, Alert } from 'react-native'
+import React, { useMemo, useState } from 'react'
+import { ScrollView, RefreshControl, View, StyleSheet } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { AppView } from '@/components/app-view'
 import { AppText } from '@/components/app-text'
-import { AppPage } from '@/components/app-page'
-import { ActivityIndicator } from 'react-native'
-import { SolanaColors } from '@/constants/colors'
 import { useGetChallengeWithGill } from '@/components/descipline/use-gill-challenge-hooks'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { useWalletGuard } from '@/hooks/use-wallet-guard'
+import { useAuth } from '@/components/auth/auth-provider'
+import { SolanaColors } from '@/constants/colors'
+import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
+import { ChallengeStatusBadge, ChallengeStatus } from '@/components/descipline/ui/challenge-status-badge'
+import { UserParticipationCard } from '@/components/descipline/ui/user-participation-card'
+import { ParticipantsList } from '@/components/descipline/ui/participants-list'
+import { ActionConfirmationModal } from '@/components/descipline/ui/action-confirmation-modal'
+
+interface ChallengeParticipant {
+  address: string
+  stakeAmount: number
+  participationTime: Date
+  isWinner?: boolean
+  hasClaimed?: boolean
+}
+
+interface UserParticipation {
+  isParticipant: boolean
+  stakeAmount?: number
+  canClaim?: boolean
+  hasClaimed?: boolean
+  isWinner?: boolean
+  participationTime?: Date
+}
+
+interface DetailItemProps {
+  icon: string
+  label: string
+  value: string
+}
+
+function DetailItem({ icon, label, value }: DetailItemProps) {
+  return (
+    <View style={styles.detailItem}>
+      <View style={styles.detailIconContainer}>
+        <UiIconSymbol name={icon} size={16} color={SolanaColors.brand.purple} />
+      </View>
+      <View style={styles.detailContent}>
+        <AppText style={styles.detailLabel}>{label}</AppText>
+        <AppText style={styles.detailValue}>{value}</AppText>
+      </View>
+    </View>
+  )
+}
 
 export default function ChallengeDetailScreen() {
   useWalletGuard()
   const { id } = useLocalSearchParams<{ id: string }>()
-  const router = useRouter()
+  const { account } = useAuth()
   
   const { 
     data: challenge, 
     isLoading, 
-    error 
+    error,
+    refetch 
   } = useGetChallengeWithGill(id)
 
-  const formatAmount = (amount: string) => {
-    const num = parseInt(amount)
-    return new Intl.NumberFormat().format(num)
-  }
+  // Modal states
+  const [isStaking, setIsStaking] = useState(false)
+  const [isClaiming, setIsClaiming] = useState(false)
+  const [showStakeModal, setShowStakeModal] = useState(false)
+  const [showClaimModal, setShowClaimModal] = useState(false)
 
-  const formatDate = (timestamp: string) => {
-    const date = new Date(parseInt(timestamp) * 1000)
-    return date.toLocaleString()
-  }
+  // Compute derived data
+  const challengeData = useMemo(() => {
+    if (!challenge) return null
 
-  const getTimeRemaining = (endTimestamp: string) => {
-    const now = Date.now() / 1000
-    const end = parseInt(endTimestamp)
-    const diff = end - now
+    const endTime = new Date(Number(challenge.stakeEndAt) * 1000)
+    const claimTime = new Date(Number(challenge.claimStartFrom) * 1000)
+    const now = Date.now()
     
-    if (diff <= 0) return 'Expired'
+    // Determine challenge status
+    let status: ChallengeStatus
+    if (now < Number(challenge.stakeEndAt) * 1000) {
+      status = ChallengeStatus.ACTIVE
+    } else if (now < Number(challenge.claimStartFrom) * 1000) {
+      status = ChallengeStatus.ENDED
+    } else {
+      status = ChallengeStatus.RESOLVED
+    }
+
+    const isCreator = account && challenge.initiator === account.publicKey.toString()
+    const tokenSymbol = 'USDC' // TODO: Get from challenge data
+    const decimals = 6 // TODO: Get from challenge data
     
-    const days = Math.floor(diff / 86400)
-    const hours = Math.floor((diff % 86400) / 3600)
-    const minutes = Math.floor((diff % 3600) / 60)
-    
-    if (days > 0) return `${days}d ${hours}h remaining`
-    if (hours > 0) return `${hours}h ${minutes}m remaining`
-    return `${minutes}m remaining`
+    // Mock participants data - TODO: implement gill-based participant reading
+    const participants: ChallengeParticipant[] = [
+      {
+        address: challenge.initiator,
+        stakeAmount: Number(challenge.stakeAmount),
+        participationTime: new Date(Date.now() - 86400000), // 1 day ago
+        isWinner: false,
+        hasClaimed: false
+      }
+    ]
+
+    // Mock user participation - TODO: implement gill-based user participation check
+    const userParticipation: UserParticipation | null = account ? {
+      isParticipant: participants.some(p => p.address === account.publicKey.toString()),
+      stakeAmount: Number(challenge.stakeAmount),
+      canClaim: false,
+      hasClaimed: false,
+      isWinner: false,
+      participationTime: new Date()
+    } : null
+
+    return {
+      status,
+      endTime,
+      claimTime,
+      isCreator,
+      tokenSymbol,
+      decimals,
+      participants,
+      userParticipation
+    }
+  }, [challenge, account])
+
+  const formatAmount = (amount: number) => {
+    return `${(amount / 1000000).toFixed(2)} USDC`
   }
 
-  const isExpired = () => {
-    if (!challenge) return false
-    const now = Date.now() / 1000
-    return now > parseInt(challenge.stakeEndAt)
+  const formatTime = (time: Date) => {
+    return time.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
-  const isClaimable = () => {
-    if (!challenge) return false
-    const now = Date.now() / 1000
-    return now >= parseInt(challenge.claimStartFrom) && now <= parseInt(challenge.stakeEndAt)
+  const handleJoinChallenge = () => {
+    setShowStakeModal(true)
   }
 
-  const getStatusInfo = () => {
-    if (!challenge) return { text: 'Unknown', color: '#6b7280' }
-    
-    if (isExpired()) return { text: 'Expired', color: '#ef4444' }
-    if (isClaimable()) return { text: 'Claimable', color: '#10b981' }
-    if (challenge.isActive) return { text: 'Active', color: SolanaColors.brand.purple }
-    return { text: 'Inactive', color: '#6b7280' }
+  const handleClaimReward = () => {
+    setShowClaimModal(true)
   }
 
-  const handleStake = () => {
-    Alert.alert(
-      'Stake in Challenge',
-      'Staking functionality will be implemented in the next update.',
-      [{ text: 'OK' }]
-    )
+  const handleStakeConfirm = async () => {
+    setIsStaking(true)
+    try {
+      // TODO: Implement actual stake transaction using Anchor or Web3.js
+      // For now, using mock delay
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      setShowStakeModal(false)
+      refetch()
+    } catch (error) {
+      console.error('Stake failed:', error)
+    } finally {
+      setIsStaking(false)
+    }
   }
 
-  const handleClaim = () => {
-    Alert.alert(
-      'Claim Rewards',
-      'Claiming functionality will be implemented in the next update.',
-      [{ text: 'OK' }]
-    )
+  const handleClaimConfirm = async () => {
+    setIsClaiming(true)
+    try {
+      // TODO: Implement actual claim transaction using Anchor or Web3.js
+      // For now, using mock delay
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      setShowClaimModal(false)
+      refetch()
+    } catch (error) {
+      console.error('Claim failed:', error)
+    } finally {
+      setIsClaiming(false)
+    }
   }
 
   if (isLoading) {
     return (
-      <AppPage>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={SolanaColors.brand.purple} />
-          <AppText style={{ marginTop: 8 }}>Loading challenge details...</AppText>
+      <AppView style={styles.container}>
+        <LinearGradient
+          colors={[SolanaColors.brand.dark, '#2a1a3a']}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={styles.loadingContainer}>
+          <AppText style={styles.loadingText}>Loading challenge...</AppText>
         </View>
-      </AppPage>
+      </AppView>
     )
   }
 
-  if (error || !challenge) {
+  if (error || !challenge || !challengeData) {
     return (
-      <AppPage>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 }}>
-          <AppText type="defaultSemiBold" style={{ color: '#ef4444', marginBottom: 8 }}>
-            Error loading challenge
-          </AppText>
-          <AppText style={{ textAlign: 'center', opacity: 0.7, marginBottom: 16 }}>
-            {error instanceof Error ? error.message : 'Challenge not found'}
-          </AppText>
-          <TouchableOpacity
-            style={{
-              backgroundColor: SolanaColors.brand.purple,
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 8,
-            }}
-            onPress={() => router.back()}
-          >
-            <AppText style={{ color: '#ffffff', fontWeight: '600' }}>
-              Go Back
-            </AppText>
-          </TouchableOpacity>
+      <AppView style={styles.container}>
+        <LinearGradient
+          colors={[SolanaColors.brand.dark, '#2a1a3a']}
+          style={StyleSheet.absoluteFillObject}
+        />
+        <View style={styles.errorContainer}>
+          <AppText style={styles.errorText}>Failed to load challenge</AppText>
         </View>
-      </AppPage>
+      </AppView>
     )
   }
-
-  const statusInfo = getStatusInfo()
 
   return (
-    <AppPage>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
-        {/* Header */}
-        <View style={{ marginBottom: 24 }}>
-          <TouchableOpacity
-            style={{ alignSelf: 'flex-start', marginBottom: 16 }}
-            onPress={() => router.back()}
-          >
-            <AppText style={{ color: SolanaColors.brand.purple }}>← Back to Challenges</AppText>
-          </TouchableOpacity>
-          
-          <AppText type="title" style={{ marginBottom: 8 }}>
-            {challenge.name}
-          </AppText>
-          
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-            <View style={[
-              { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 16, marginRight: 12 },
-              { backgroundColor: statusInfo.color }
-            ]}>
-              <AppText style={{ color: '#ffffff', fontSize: 12, fontWeight: '600' }}>
-                {statusInfo.text}
-              </AppText>
-            </View>
-            <AppText style={{ fontSize: 14, opacity: 0.7 }}>
-              {getTimeRemaining(challenge.stakeEndAt)}
-            </AppText>
-          </View>
-          
-          <AppText style={{ fontSize: 12, opacity: 0.5, fontFamily: 'monospace' }}>
-            {challenge.publicKey}
-          </AppText>
-        </View>
-
-        {/* Challenge Info */}
-        <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-          <AppText type="defaultSemiBold" style={{ marginBottom: 16 }}>Challenge Details</AppText>
-          
-          <View style={{ gap: 12 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText style={{ opacity: 0.7 }}>Stake Amount</AppText>
-              <AppText type="defaultSemiBold">
-                {formatAmount(challenge.stakeAmount)} {challenge.tokenAllowed}
-              </AppText>
+    <AppView style={styles.container}>
+      <LinearGradient
+        colors={[SolanaColors.brand.dark, '#2a1a3a']}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Challenge Header */}
+        <View style={styles.headerCard}>
+          <LinearGradient
+            colors={['rgba(153, 69, 255, 0.1)', 'rgba(220, 31, 255, 0.05)']}
+            style={styles.headerGradient}
+          />
+          <View style={styles.headerContent}>
+            <View style={styles.titleRow}>
+              <AppText style={styles.challengeTitle}>{challenge.name}</AppText>
+              <ChallengeStatusBadge status={challengeData.status} />
             </View>
             
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText style={{ opacity: 0.7 }}>Fee</AppText>
-              <AppText type="defaultSemiBold">{challenge.fee / 100}%</AppText>
-            </View>
-            
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText style={{ opacity: 0.7 }}>Token Type</AppText>
-              <View style={[
-                { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-                { backgroundColor: challenge.tokenAllowed === 'USDC' ? '#2563eb' : '#9945ff' }
-              ]}>
-                <AppText style={{ color: '#ffffff', fontSize: 12, fontWeight: '600' }}>
-                  {challenge.tokenAllowed}
-                </AppText>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <UiIconSymbol name="person.2.fill" size={16} color={SolanaColors.brand.purple} />
+                <AppText style={styles.statText}>{challengeData.participants.length} participants</AppText>
+              </View>
+              <View style={styles.statItem}>
+                <UiIconSymbol name="dollarsign.circle.fill" size={16} color="#fbbf24" />
+                <AppText style={styles.statText}>{formatAmount(challengeData.participants.length * Number(challenge.stakeAmount))} total</AppText>
               </View>
             </View>
-            
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <AppText style={{ opacity: 0.7 }}>Participants</AppText>
-              <AppText type="defaultSemiBold">{challenge.participantCount}</AppText>
+          </View>
+        </View>
+
+        {/* User Participation Card */}
+        <UserParticipationCard
+          userParticipation={challengeData.userParticipation}
+          challengeStatus={challengeData.status}
+          tokenSymbol={challengeData.tokenSymbol}
+          decimals={challengeData.decimals}
+          onJoinChallenge={handleJoinChallenge}
+          onClaimReward={handleClaimReward}
+          isLoading={isStaking || isClaiming}
+        />
+
+        {/* Challenge Details */}
+        <View style={styles.detailsCard}>
+          <AppText style={styles.sectionTitle}>📋 Challenge Details</AppText>
+          
+          <View style={styles.detailsGrid}>
+            <DetailItem
+              icon="dollarsign.circle"
+              label="Stake Amount"
+              value={formatAmount(Number(challenge.stakeAmount))}
+            />
+            <DetailItem
+              icon="star.fill"
+              label="Creator Fee"
+              value={`${challenge.fee / 100}%`}
+            />
+            <DetailItem
+              icon="clock.fill"
+              label="Stake Deadline"
+              value={formatTime(challengeData.endTime)}
+            />
+            <DetailItem
+              icon="checkmark.circle.fill"
+              label="Claim Start"
+              value={formatTime(challengeData.claimTime)}
+            />
+          </View>
+        </View>
+
+        {/* Creator Info */}
+        <View style={styles.detailsCard}>
+          <AppText style={styles.sectionTitle}>👑 Creator Info</AppText>
+          
+          <View style={styles.creatorInfo}>
+            <View style={styles.creatorAvatar}>
+              <AppText style={styles.creatorAvatarText}>
+                {challenge.initiator.slice(0, 2).toUpperCase()}
+              </AppText>
+            </View>
+            <View style={styles.creatorDetails}>
+              <AppText style={styles.creatorAddress}>
+                {`${challenge.initiator.slice(0, 8)}...${challenge.initiator.slice(-8)}`}
+              </AppText>
+              {challengeData.isCreator && (
+                <View style={styles.creatorBadge}>
+                  <AppText style={styles.creatorBadgeText}>YOU</AppText>
+                </View>
+              )}
             </View>
           </View>
         </View>
 
-        {/* Timeline */}
-        <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-          <AppText type="defaultSemiBold" style={{ marginBottom: 16 }}>Timeline</AppText>
-          
-          <View style={{ gap: 12 }}>
-            <View>
-              <AppText style={{ opacity: 0.7, marginBottom: 4 }}>Stake Period Ends</AppText>
-              <AppText type="defaultSemiBold">{formatDate(challenge.stakeEndAt)}</AppText>
-            </View>
-            
-            <View>
-              <AppText style={{ opacity: 0.7, marginBottom: 4 }}>Claim Period Starts</AppText>
-              <AppText type="defaultSemiBold">{formatDate(challenge.claimStartFrom)}</AppText>
-            </View>
-          </View>
-        </View>
-
-        {/* Participants */}
-        <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
-          <AppText type="defaultSemiBold" style={{ marginBottom: 16 }}>Participants</AppText>
-          
-          <View style={{ gap: 12 }}>
-            <View>
-              <AppText style={{ opacity: 0.7, marginBottom: 4 }}>Initiator</AppText>
-              <AppText style={{ fontFamily: 'monospace', fontSize: 12 }}>
-                {challenge.initiator}
-              </AppText>
-            </View>
-            
-            <View>
-              <AppText style={{ opacity: 0.7, marginBottom: 4 }}>Schema</AppText>
-              <AppText style={{ fontFamily: 'monospace', fontSize: 12 }}>
-                {challenge.schemaPda}
-              </AppText>
-            </View>
-          </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={{ gap: 12, marginBottom: 32 }}>
-          {!isExpired() && (
-            <TouchableOpacity
-              style={{
-                backgroundColor: SolanaColors.brand.purple,
-                padding: 16,
-                borderRadius: 12,
-                alignItems: 'center',
-              }}
-              onPress={handleStake}
-            >
-              <AppText type="defaultSemiBold" style={{ color: '#ffffff' }}>
-                Stake in Challenge
-              </AppText>
-            </TouchableOpacity>
-          )}
-          
-          {isClaimable() && (
-            <TouchableOpacity
-              style={{
-                backgroundColor: '#10b981',
-                padding: 16,
-                borderRadius: 12,
-                alignItems: 'center',
-              }}
-              onPress={handleClaim}
-            >
-              <AppText type="defaultSemiBold" style={{ color: '#ffffff' }}>
-                Claim Rewards
-              </AppText>
-            </TouchableOpacity>
-          )}
-          
-          {isExpired() && (
-            <View style={{
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              padding: 16,
-              borderRadius: 12,
-              alignItems: 'center',
-              borderWidth: 1,
-              borderColor: '#ef4444',
-            }}>
-              <AppText style={{ color: '#ef4444' }}>
-                This challenge has expired
-              </AppText>
-            </View>
-          )}
-        </View>
+        {/* Participants List */}
+        <ParticipantsList
+          participants={challengeData.participants}
+          tokenSymbol={challengeData.tokenSymbol}
+          decimals={challengeData.decimals}
+          currentUserAddress={account?.publicKey.toString()}
+        />
       </ScrollView>
-    </AppPage>
+
+      {/* Stake Confirmation Modal */}
+      <ActionConfirmationModal
+        visible={showStakeModal}
+        onClose={() => setShowStakeModal(false)}
+        onConfirm={handleStakeConfirm}
+        challenge={challenge}
+        creatorAddress={challenge.initiator}
+        loading={isStaking}
+        realParticipantCount={challengeData.participants.length}
+        mode="stake"
+      />
+
+      {/* Claim Confirmation Modal */}
+      <ActionConfirmationModal
+        visible={showClaimModal}
+        onClose={() => setShowClaimModal(false)}
+        onConfirm={handleClaimConfirm}
+        challenge={challenge}
+        creatorAddress={challenge.initiator}
+        loading={isClaiming}
+        realParticipantCount={challengeData.participants.length}
+        mode="claim"
+        rewardAmount={Number(challenge.stakeAmount)} // Mock reward amount
+        isWinner={true} // Mock winner status
+      />
+    </AppView>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 32,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#ef4444',
+  },
+  
+  // Header Card
+  headerCard: {
+    marginHorizontal: 24,
+    marginTop: 20,
+    marginBottom: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+  },
+  headerGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  headerContent: {
+    padding: 20,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  challengeTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ffffff',
+    flex: 1,
+    marginRight: 12,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+  },
+
+  // Details Card
+  detailsCard: {
+    marginHorizontal: 24,
+    marginBottom: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
+  detailsGrid: {
+    gap: 16,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  detailIconContainer: {
+    marginRight: 12,
+  },
+  detailContent: {
+    flex: 1,
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 2,
+  },
+  detailValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+
+  // Creator Info
+  creatorInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  creatorAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: SolanaColors.brand.purple,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  creatorAvatarText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  creatorDetails: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  creatorAddress: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+    fontFamily: 'monospace',
+  },
+  creatorBadge: {
+    backgroundColor: SolanaColors.brand.purple,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  creatorBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+})
