@@ -1,7 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
 import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
 import { useConnection } from '@/components/solana/solana-provider'
-import { useMobileWallet } from '@/components/solana/solana-provider'
+import { useAuth } from '@/components/auth/auth-provider'
+import { useMobileWallet } from '@/components/solana/use-mobile-wallet'
 import { Challenge } from '@/utils/descipline/types'
 import { TransactionStep } from './ui/transaction-progress-modal'
 
@@ -12,12 +13,13 @@ interface StakeChallengeParams {
 
 export function useStakeChallenge() {
   const connection = useConnection()
-  const { selectedAccount, signAndSendTransactions } = useMobileWallet()
+  const { account } = useAuth()
+  const { signAndSendTransaction } = useMobileWallet()
 
   return useMutation({
     mutationFn: async ({ challenge, onProgressUpdate }: StakeChallengeParams) => {
       try {
-        if (!selectedAccount) {
+        if (!account) {
           throw new Error('Wallet not connected')
         }
 
@@ -36,14 +38,14 @@ export function useStakeChallenge() {
         // In real implementation, this would be the stake instruction
         transaction.add(
           SystemProgram.transfer({
-            fromPubkey: selectedAccount.publicKey,
-            toPubkey: selectedAccount.publicKey, // Self transfer as demo
+            fromPubkey: account.publicKey,
+            toPubkey: account.publicKey, // Self transfer as demo
             lamports: 1000 // Small amount for demo
           })
         )
 
         transaction.recentBlockhash = blockhash
-        transaction.feePayer = selectedAccount.publicKey
+        transaction.feePayer = account.publicKey
 
         // Step 2: Request wallet signature and send
         onProgressUpdate(TransactionStep.SIGNING)
@@ -51,11 +53,7 @@ export function useStakeChallenge() {
         // Step 3: Send transaction
         onProgressUpdate(TransactionStep.SENDING)
         
-        const signatures = await signAndSendTransactions({
-          transactions: [transaction]
-        })
-        
-        const signature = signatures[0]
+        const signature = await signAndSendTransaction(transaction, lastValidBlockHeight)
 
         // Step 4: Wait for confirmation
         onProgressUpdate(TransactionStep.CONFIRMING, { signature })
@@ -81,12 +79,13 @@ export function useStakeChallenge() {
 
 export function useClaimReward() {
   const connection = useConnection()
-  const { selectedAccount, signAndSendTransactions } = useMobileWallet()
+  const { account } = useAuth()
+  const { signAndSendTransaction } = useMobileWallet()
 
   return useMutation({
     mutationFn: async ({ challenge, onProgressUpdate }: StakeChallengeParams) => {
       try {
-        if (!selectedAccount) {
+        if (!account) {
           throw new Error('Wallet not connected')
         }
 
@@ -101,23 +100,19 @@ export function useClaimReward() {
         // TODO: Replace with actual Descipline program claim instruction
         transaction.add(
           SystemProgram.transfer({
-            fromPubkey: selectedAccount.publicKey,
-            toPubkey: selectedAccount.publicKey,
+            fromPubkey: account.publicKey,
+            toPubkey: account.publicKey,
             lamports: 1000
           })
         )
 
         transaction.recentBlockhash = blockhash
-        transaction.feePayer = selectedAccount.publicKey
+        transaction.feePayer = account.publicKey
 
         onProgressUpdate(TransactionStep.SIGNING)
         onProgressUpdate(TransactionStep.SENDING)
         
-        const signatures = await signAndSendTransactions({
-          transactions: [transaction]
-        })
-        
-        const signature = signatures[0]
+        const signature = await signAndSendTransaction(transaction, lastValidBlockHeight)
 
         onProgressUpdate(TransactionStep.CONFIRMING, { signature })
         
