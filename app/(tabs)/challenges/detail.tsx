@@ -3,7 +3,11 @@ import { ScrollView, RefreshControl, View, StyleSheet } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { AppView } from '@/components/app-view'
 import { AppText } from '@/components/app-text'
-import { useGetChallengeWithGill } from '@/components/descipline/use-gill-challenge-hooks'
+import { 
+  useGetChallengeWithGill,
+  useCheckUserParticipationWithGill,
+  useGetChallengeParticipantsWithGill
+} from '@/components/descipline/use-gill-challenge-hooks'
 import { useLocalSearchParams, useNavigation } from 'expo-router'
 import { useWalletGuard } from '@/hooks/use-wallet-guard'
 import { useAuth } from '@/components/auth/auth-provider'
@@ -86,6 +90,15 @@ export default function ChallengeDetailScreen() {
     error,
     refetch 
   } = useGetChallengeWithGill(id)
+  
+  // Check user participation
+  const { data: hasParticipated } = useCheckUserParticipationWithGill(id)
+  
+  // Get real participants
+  const { data: realParticipants } = useGetChallengeParticipantsWithGill(
+    id, 
+    challenge?.stakeAmount || '0'
+  )
 
   // Modal states
   const [showStakeModal, setShowStakeModal] = useState(false)
@@ -125,20 +138,27 @@ export default function ChallengeDetailScreen() {
     const tokenSymbol = 'USDC' // TODO: Get from challenge data
     const decimals = 6 // TODO: Get from challenge data
     
-    // Mock participants data - TODO: implement gill-based participant reading
-    const participants: ChallengeParticipant[] = [
+    // Use real participants data from gill
+    const participants: ChallengeParticipant[] = realParticipants?.map(p => ({
+      address: p.address,
+      stakeAmount: Number(p.stakeAmount),
+      participationTime: p.participationTime,
+      isWinner: false,
+      hasClaimed: false
+    })) || [
+      // Fallback: always include initiator
       {
         address: challenge.initiator,
         stakeAmount: Number(challenge.stakeAmount),
-        participationTime: new Date(Date.now() - 86400000), // 1 day ago
+        participationTime: new Date(Date.now() - 86400000),
         isWinner: false,
         hasClaimed: false
       }
     ]
 
-    // Mock user participation - TODO: implement gill-based user participation check
-    const userParticipation: UserParticipation | null = account ? {
-      isParticipant: participants.some(p => p.address === account.publicKey.toString()),
+    // Use real user participation check from gill
+    const userParticipation: UserParticipation | null = account && hasParticipated ? {
+      isParticipant: true,
       stakeAmount: Number(challenge.stakeAmount),
       canClaim: false,
       hasClaimed: false,

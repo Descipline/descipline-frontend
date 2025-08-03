@@ -77,16 +77,20 @@ interface StepCardProps {
   step: number
   title: string
   description: string
+  icon?: string
 }
 
-function StepCard({ step, title, description }: StepCardProps) {
+function StepCard({ step, title, description, icon }: StepCardProps) {
   return (
     <View style={styles.stepCard}>
       <View style={styles.stepNumber}>
         <AppText style={styles.stepNumberText}>{step}</AppText>
       </View>
       <View style={styles.stepContent}>
-        <AppText style={styles.stepTitle}>{title}</AppText>
+        <View style={styles.stepHeader}>
+          <AppText style={styles.stepTitle}>{title}</AppText>
+          {icon && <AppText style={styles.stepIcon}>{icon}</AppText>}
+        </View>
         <AppText style={styles.stepDescription}>{description}</AppText>
       </View>
     </View>
@@ -113,52 +117,8 @@ export default function Home() {
     ]).start()
   }, [headerFadeAnim, headerSlideAnim])
 
-  // Get recent and popular challenges for display
+  // Get recent challenges for display
   const recentChallenges = challenges?.slice(0, 3) || []
-
-  const features = [
-    {
-      icon: '🏆',
-      title: 'Create Challenges',
-      description: 'Design fitness challenges with custom rewards and timeframes',
-      onPress: () => router.push('/challenges/create'),
-    },
-    {
-      icon: '👥',
-      title: 'Join Challenges',
-      description: 'Participate in exciting challenges and compete with others',
-      onPress: () => router.push('/challenges'),
-    },
-    {
-      icon: '⭐',
-      title: 'Earn Rewards',
-      description: 'Complete challenges and claim your USDC rewards',
-      onPress: () => router.push('/profile'),
-    },
-  ]
-
-  const steps = [
-    {
-      step: 1,
-      title: 'Connect Wallet',
-      description: 'Connect your Solana wallet to get started',
-    },
-    {
-      step: 2,
-      title: 'Choose Challenge',
-      description: 'Browse and join challenges that interest you',
-    },
-    {
-      step: 3,
-      title: 'Stake Tokens',
-      description: 'Stake USDC to participate in the challenge',
-    },
-    {
-      step: 4,
-      title: 'Complete & Claim',
-      description: 'Complete the challenge and claim your rewards',
-    },
-  ]
 
   return (
     <AppView style={styles.container}>
@@ -182,30 +142,85 @@ export default function Home() {
               },
             ]}
           >
-            <AppText style={styles.welcomeText}>Welcome to</AppText>
-            <AppText style={styles.appTitle}>Descipline</AppText>
+            <AppText style={styles.appTitle}>DESCIPLINE</AppText>
             <AppText style={styles.subtitle}>
-              Decentralized Challenge Platform on Solana
+              An open challenge arena where rewards discipline
+            </AppText>
+            <AppText style={styles.tagline}>
+              turns self-driven goals into on-chain accountability
             </AppText>
           </Animated.View>
 
-          {/* Features Section */}
+          {/* How it Works Section */}
           <View style={styles.section}>
-            <AppText style={styles.sectionTitle}>Get Started</AppText>
-            <View style={styles.featuresGrid}>
-              {features.map((feature, index) => (
-                <FeatureCard key={index} {...feature} delay={200 + index * 100} />
-              ))}
+            <AppText style={styles.sectionTitle}>How it works</AppText>
+            <View style={styles.stepsContainer}>
+              <StepCard
+                step={1}
+                title="Set a goal"
+                description="An initiator create a challenge."
+                icon="🎯"
+              />
+              <StepCard
+                step={2}
+                title="Stake commitment"
+                description="Challengers Lock funds into a vault."
+                icon="💰"
+              />
+              <StepCard
+                step={3}
+                title="Prove completion"
+                description="Onchain attestation."
+                icon="✅"
+              />
+              <StepCard
+                step={4}
+                title="Reap rewards"
+                description="Winners get stake back + share of losers."
+                icon="🏆"
+              />
             </View>
           </View>
 
-          {/* How it Works Section */}
+          {/* Technical Architecture Section */}
           <View style={styles.section}>
-            <AppText style={styles.sectionTitle}>How It Works</AppText>
-            <View style={styles.stepsContainer}>
-              {steps.map((step, index) => (
-                <StepCard key={index} {...step} />
-              ))}
+            <AppText style={styles.sectionTitle}>Technical Architecture</AppText>
+            <View style={styles.architectureGrid}>
+              <View style={styles.architectureCard}>
+                <View style={styles.architectureNumber}>
+                  <AppText style={styles.architectureNumberText}>1</AppText>
+                </View>
+                <AppText style={styles.architectureText}>
+                  An initiator creates a challenge.
+                </AppText>
+              </View>
+              
+              <View style={styles.architectureCard}>
+                <View style={styles.architectureNumber}>
+                  <AppText style={styles.architectureNumberText}>2</AppText>
+                </View>
+                <AppText style={styles.architectureText}>
+                  Challengers stake funds into a challenge vault.
+                </AppText>
+              </View>
+              
+              <View style={styles.architectureCard}>
+                <View style={styles.architectureNumber}>
+                  <AppText style={styles.architectureNumberText}>3</AppText>
+                </View>
+                <AppText style={styles.architectureText}>
+                  An attestor signs an attestation with merkle root.
+                </AppText>
+              </View>
+              
+              <View style={styles.architectureCard}>
+                <View style={styles.architectureNumber}>
+                  <AppText style={styles.architectureNumberText}>4</AppText>
+                </View>
+                <AppText style={styles.architectureText}>
+                  Winners claim rewards by verifying merkle proof.
+                </AppText>
+              </View>
             </View>
           </View>
 
@@ -269,23 +284,28 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
     alignItems: 'center',
   },
-  welcomeText: {
-    fontSize: 18,
-    color: 'rgba(255, 255, 255, 0.7)',
-    marginBottom: 8,
-  },
   appTitle: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: '700',
     color: '#ffffff',
-    marginBottom: 12,
+    marginBottom: 16,
     textAlign: 'center',
+    letterSpacing: 2,
   },
   subtitle: {
+    fontSize: 18,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    lineHeight: 26,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  tagline: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: SolanaColors.brand.purple,
     textAlign: 'center',
     lineHeight: 24,
+    fontStyle: 'italic',
   },
   section: {
     paddingHorizontal: 24,
@@ -297,42 +317,8 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginBottom: 20,
   },
-  featuresGrid: {
-    gap: 16,
-  },
-  featureCard: {
-    width: '100%',
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    overflow: 'hidden',
-    minHeight: 120,
-    marginBottom: 16,
-  },
-  featureCardGradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  featureIconContainer: {
-    marginBottom: 12,
-  },
-  featureIcon: {
-    fontSize: 32,
-    color: SolanaColors.brand.purple,
-  },
-  featureTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 8,
-  },
-  featureDescription: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    lineHeight: 20,
-  },
   stepsContainer: {
-    gap: 16,
+    gap: 12,
   },
   stepCard: {
     flexDirection: 'row',
@@ -342,6 +328,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    marginBottom: 12,
   },
   stepNumber: {
     width: 32,
@@ -360,15 +347,59 @@ const styles = StyleSheet.create({
   stepContent: {
     flex: 1,
   },
+  stepHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
   stepTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
-    marginBottom: 4,
+  },
+  stepIcon: {
+    fontSize: 20,
+    marginLeft: 8,
   },
   stepDescription: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 20,
+  },
+  architectureGrid: {
+    gap: 16,
+  },
+  architectureCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(153, 69, 255, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(153, 69, 255, 0.3)',
+    marginBottom: 12,
+  },
+  architectureNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(220, 31, 255, 0.2)',
+    borderWidth: 1,
+    borderColor: '#dc1fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  architectureNumberText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#dc1fff',
+  },
+  architectureText: {
+    flex: 1,
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
     lineHeight: 20,
   },
   sectionHeader: {
@@ -409,5 +440,37 @@ const styles = StyleSheet.create({
   ctaButtonIcon: {
     fontSize: 18,
     color: '#ffffff',
+  },
+  // Unused styles from old design
+  featureCard: {
+    width: '100%',
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+    minHeight: 120,
+    marginBottom: 16,
+  },
+  featureCardGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  featureIconContainer: {
+    marginBottom: 12,
+  },
+  featureIcon: {
+    fontSize: 32,
+    color: SolanaColors.brand.purple,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  featureDescription: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 20,
   },
 })

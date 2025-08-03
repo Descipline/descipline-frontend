@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { useCluster } from '@/components/cluster/cluster-provider'
+import { useAuth } from '@/components/auth/auth-provider'
 import { 
   fetchChallengesWithGill, 
   fetchChallengeByIdWithGill,
   GillChallengeData,
   GillStats,
-  getProgramStatsWithGill
+  getProgramStatsWithGill,
+  checkUserParticipationWithGill,
+  getChallengeParticipantsWithGill
 } from '@/utils/descipline/gill-challenge-reader'
 
 /**
@@ -138,5 +141,72 @@ export function useTestGillConnection() {
     enabled: !!selectedCluster?.endpoint,
     staleTime: 30000,
     refetchInterval: 180000, // Refetch every 3 minutes
+  })
+}
+
+/**
+ * Hook to check if current user has participated in a challenge
+ */
+export function useCheckUserParticipationWithGill(challengeId: string) {
+  const { selectedCluster } = useCluster()
+  const { account } = useAuth()
+  
+  return useQuery({
+    queryKey: ['gill-user-participation', challengeId, account?.publicKey?.toString(), selectedCluster?.endpoint],
+    queryFn: async () => {
+      if (!account?.publicKey) {
+        return false
+      }
+      
+      console.log('🔍 Checking user participation for challenge:', challengeId)
+      
+      try {
+        const hasParticipated = await checkUserParticipationWithGill(
+          challengeId,
+          account.publicKey.toString(),
+          selectedCluster?.endpoint
+        )
+        
+        console.log('✅ User participation check result:', hasParticipated)
+        return hasParticipated
+        
+      } catch (error) {
+        console.error('❌ Failed to check user participation:', error)
+        return false
+      }
+    },
+    enabled: !!selectedCluster?.endpoint && !!challengeId && !!account?.publicKey,
+    staleTime: 30000,
+  })
+}
+
+/**
+ * Hook to get challenge participants
+ */
+export function useGetChallengeParticipantsWithGill(challengeId: string, stakeAmount: string) {
+  const { selectedCluster } = useCluster()
+  
+  return useQuery({
+    queryKey: ['gill-challenge-participants', challengeId, selectedCluster?.endpoint],
+    queryFn: async () => {
+      console.log('🔍 Fetching participants for challenge:', challengeId)
+      
+      try {
+        const participants = await getChallengeParticipantsWithGill(
+          challengeId,
+          stakeAmount,
+          selectedCluster?.endpoint
+        )
+        
+        console.log('✅ Found participants:', participants.length)
+        return participants
+        
+      } catch (error) {
+        console.error('❌ Failed to fetch participants:', error)
+        return []
+      }
+    },
+    enabled: !!selectedCluster?.endpoint && !!challengeId && !!stakeAmount,
+    staleTime: 30000,
   })
 }
