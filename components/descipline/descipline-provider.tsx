@@ -32,9 +32,13 @@ export function DesciplineProvider({ children }: { children: React.ReactNode }) 
     try {
       console.log('🔄 Creating Anchor program for template architecture...')
       
+      // Safely create program ID from constants
+      const programId = DESCIPLINE_CONFIG.PROGRAM_ID
+      console.log('✅ Program ID created:', programId.toString())
+      
       // Create a dummy wallet for read-only operations
       const dummyWallet = {
-        publicKey: DESCIPLINE_CONFIG.PROGRAM_ID,
+        publicKey: programId, // Use the programId we just created
         signTransaction: () => Promise.reject(new Error('Read-only mode - no signing available')),
         signAllTransactions: () => Promise.reject(new Error('Read-only mode - no signing available')),
       }
@@ -53,7 +57,7 @@ export function DesciplineProvider({ children }: { children: React.ReactNode }) 
       // For Anchor v0.31.1, we need to pass the IDL differently
       const program = new Program(
         IDL as any,
-        DESCIPLINE_CONFIG.PROGRAM_ID,
+        programId,
         provider
       ) as Program<Descipline>
       
