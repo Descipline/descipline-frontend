@@ -275,7 +275,7 @@ export default function Home() {
             >
               <TouchableOpacity 
                 style={styles.primaryButton} 
-                onPress={() => router.push('/challenges')}
+                onPress={() => router.push('/(tabs)/challenges')}
                 activeOpacity={0.9}
               >
                 <LinearGradient
@@ -383,7 +383,7 @@ export default function Home() {
           </AppText>
           <TouchableOpacity 
             style={styles.ctaButton} 
-            onPress={() => router.push('/challenges')}
+            onPress={() => router.push('/(tabs)/challenges')}
             activeOpacity={0.8}
           >
             <LinearGradient

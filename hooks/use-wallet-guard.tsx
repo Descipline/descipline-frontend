@@ -35,7 +35,11 @@ export function useWalletGuard() {
       }
       
       console.log(`🔒 Wallet guard: Redirecting from ${pathname} to /sign-in (wallet not authenticated)`)
-      router.replace('/sign-in')
+      
+      // Use requestAnimationFrame to ensure routing happens after current render cycle
+      requestAnimationFrame(() => {
+        router.replace('/sign-in')
+      })
     }
 
     // Reset redirect flag when authenticated
