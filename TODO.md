@@ -10,27 +10,31 @@ Migrating Descipline functionality from `amigo-sol-dapp` to the new `descipline-
 
 ## 📋 Migration TODO List
 
-### Phase 1: Project Setup & Analysis 🔍
+### Phase 1: Project Setup & Analysis 🔍 ✅
 - [x] Analyze differences between `descipline-dapp-mobile` and `amigo-sol-dapp` architectures
 - [x] Document routing differences (Expo Router in both, but different structures)
 - [x] Identify compatible vs incompatible components
 - [x] Create migration priority list based on dependencies
 
-### Phase 2: Core Infrastructure 🏗️
-- [ ] Copy `utils/descipline/` folder from amigo (IDL, types, constants)
-- [ ] Install missing dependencies (@coral-xyz/anchor, etc.)
-- [ ] Setup polyfills if needed (check if template already has them)
-- [ ] Configure TypeScript paths for cleaner imports
+### Phase 2: Core Infrastructure 🏗️ ✅
+- [x] Copy `utils/descipline/` folder from amigo (IDL, types, constants)
+- [x] Install missing dependencies (@coral-xyz/anchor, buffer, etc.)
+- [x] Setup mobile-specific polyfills for React Native compatibility
+- [x] TypeScript paths already configured in template
 
-### Phase 3: UI Foundation 🎨
-- [ ] Migrate color scheme from amigo's `constants/colors.ts`
-- [ ] Adapt UI components to React Native Paper (template uses Paper)
-- [ ] Create Solana-themed Paper components
-- [ ] Ensure dark theme is properly configured
-- [ ] Migrate custom bottom navigation bar (CustomTabBar)
-- [ ] Migrate global header with wallet connect button (top left)
-- [ ] Port sign-in screen with wallet connection flow
-- [ ] Implement wallet connection state management in navigation
+### Phase 3: UI Foundation 🎨 ✅
+- [x] Migrate Solana color scheme from amigo's `constants/colors.ts`
+- [x] Use template's native header system with Solana dark theme
+- [x] Style wallet connection with amigo design (green dot + address + dropdown)
+- [x] Port sign-in screen with Solana branding and wallet connection flow
+- [x] Implement custom tab bar with Account/Challenges/Settings
+- [x] Fix duplicate header issues and dropdown positioning
+
+**Key Decisions Made:**
+- ✅ Use template's native header system (not custom GlobalHeader)
+- ✅ Keep template's wallet connection logic but use amigo's UI styling
+- ✅ Apply Solana dark theme throughout all components
+- ✅ Maintain template's auth guards and navigation structure
 
 ### Phase 4: Descipline Provider & Hooks 🪝
 - [ ] Port `components/descipline/descipline-provider.tsx`
