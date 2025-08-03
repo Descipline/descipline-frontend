@@ -5,9 +5,17 @@ import { AppView } from '@/components/app-view'
 import { ChallengeFeature } from '@/components/descipline/challenge-feature'
 import { SolanaColors } from '@/constants/colors'
 import { useWalletGuard } from '@/hooks/use-wallet-guard'
+import { useAuth } from '@/components/auth/auth-provider'
 
 export default function ChallengesScreen() {
   useWalletGuard()
+  const { account } = useAuth()
+  
+  // Prevent rendering if account is null (will be redirected by guard)
+  if (!account) {
+    return null
+  }
+  
   return (
     <AppView style={styles.container}>
       <LinearGradient

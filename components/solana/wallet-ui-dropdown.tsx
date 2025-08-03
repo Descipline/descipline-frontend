@@ -24,7 +24,6 @@ function BaseButton({
       disabled={disabled}
       activeOpacity={0.8}
     >
-      <UiIconSymbol name="wallet.pass.fill" size={16} color="#ffffff" />
       <AppText style={styles.connectButtonText}>{label}</AppText>
     </TouchableOpacity>
   )
@@ -212,35 +211,26 @@ export function WalletUiDropdown() {
 }
 
 const styles = StyleSheet.create({
-  // Connect Button Styles (matching amigo project exactly)
+  // Connect Button Styles (gray theme like connected state)
   connectButton: {
-    borderWidth: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-    justifyContent: 'center',
-    backgroundColor: '#9945ff',  // SolanaColors.brand.purple
-    borderColor: '#9945ff',      // SolanaColors.brand.purple
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#9945ff',      // SolanaColors.brand.purple
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,  // Android shadow
-    gap: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
     marginRight: 16,
   },
   connectButtonDisabled: {
     opacity: 0.7,
   },
   connectButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
     color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
+    fontFamily: 'monospace',
   },
   walletButton: {
     flexDirection: 'row',
