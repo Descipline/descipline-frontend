@@ -8,59 +8,121 @@ import { View, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-nat
 import { AppText } from '@/components/app-text'
 import { useConnection } from '@/components/solana/solana-provider'
 import { useCluster } from '@/components/cluster/cluster-provider'
+import { testGillBasic, testGillProgramAccounts } from '@/utils/gill-simple'
 
 export default function GillTestScreen() {
   const connection = useConnection()
   const { selectedCluster } = useCluster()
   const [loading, setLoading] = useState(false)
   const [testResults, setTestResults] = useState<{
-    connection: boolean | null
-    slot: number | null
+    solanaConnection: boolean | null
+    solanaSlot: number | null
+    gillBasic: boolean | null
+    gillSlot: number | null
+    gillProgramAccounts: boolean | null
+    gillAccountCount: number | null
     error: string | null
   }>({
-    connection: null,
-    slot: null,
+    solanaConnection: null,
+    solanaSlot: null,
+    gillBasic: null,
+    gillSlot: null,
+    gillProgramAccounts: null,
+    gillAccountCount: null,
     error: null
   })
 
-  const runBasicTest = async () => {
-    if (!connection || !selectedCluster) {
-      Alert.alert('Error', 'No Solana connection or cluster available')
-      return
-    }
-
+  const runAllTests = async () => {
     setLoading(true)
     setTestResults({
-      connection: null,
-      slot: null,
+      solanaConnection: null,
+      solanaSlot: null,
+      gillBasic: null,
+      gillSlot: null,
+      gillProgramAccounts: null,
+      gillAccountCount: null,
       error: null
     })
 
     try {
-      console.log('🧪 Starting basic Solana connection test...')
-      console.log('🧪 Using RPC:', selectedCluster.endpoint)
+      console.log('🧪 Starting comprehensive tests...')
 
-      // Test basic connection by getting current slot
-      const slot = await connection.getSlot()
-      console.log('🧪 Current slot:', slot)
-      
-      setTestResults({
-        connection: true,
-        slot: slot,
-        error: null
-      })
+      // Test 1: Basic Solana connection
+      if (connection && selectedCluster) {
+        console.log('🧪 Test 1: Basic Solana connection')
+        try {
+          const slot = await connection.getSlot()
+          setTestResults(prev => ({
+            ...prev,
+            solanaConnection: true,
+            solanaSlot: slot
+          }))
+          console.log('✅ Solana connection successful, slot:', slot)
+        } catch (error) {
+          setTestResults(prev => ({
+            ...prev,
+            solanaConnection: false,
+            error: `Solana: ${error.message}`
+          }))
+          console.error('❌ Solana connection failed:', error)
+        }
+      }
 
-      console.log('✅ Basic connection test successful!')
-      Alert.alert('Success', `Connection test successful! Current slot: ${slot}`)
+      // Test 2: Gill basic functionality
+      console.log('🧪 Test 2: Gill basic functionality')
+      try {
+        const gillResult = await testGillBasic()
+        setTestResults(prev => ({
+          ...prev,
+          gillBasic: gillResult.success,
+          gillSlot: gillResult.slot || null
+        }))
+        
+        if (!gillResult.success) {
+          throw new Error(gillResult.error)
+        }
+        console.log('✅ Gill basic test successful')
+      } catch (error) {
+        setTestResults(prev => ({
+          ...prev,
+          gillBasic: false,
+          error: `Gill Basic: ${error.message}`
+        }))
+        console.error('❌ Gill basic test failed:', error)
+      }
+
+      // Test 3: Gill program accounts
+      console.log('🧪 Test 3: Gill program accounts')
+      try {
+        const accountResult = await testGillProgramAccounts()
+        setTestResults(prev => ({
+          ...prev,
+          gillProgramAccounts: accountResult.success,
+          gillAccountCount: accountResult.accountCount || null
+        }))
+        
+        if (!accountResult.success) {
+          throw new Error(accountResult.error)
+        }
+        console.log('✅ Gill program accounts test successful')
+      } catch (error) {
+        setTestResults(prev => ({
+          ...prev,
+          gillProgramAccounts: false,
+          error: prev.error ? `${prev.error}; Gill Accounts: ${error.message}` : `Gill Accounts: ${error.message}`
+        }))
+        console.error('❌ Gill program accounts test failed:', error)
+      }
+
+      console.log('🧪 All tests completed')
+      Alert.alert('Tests Complete', 'Check results below')
 
     } catch (error: any) {
-      console.error('❌ Connection test error:', error)
-      setTestResults({
-        connection: false,
-        slot: null,
+      console.error('❌ Test suite error:', error)
+      setTestResults(prev => ({
+        ...prev,
         error: error.message || 'Unknown error'
-      })
-      Alert.alert('Error', `Connection test failed: ${error.message}`)
+      }))
     } finally {
       setLoading(false)
     }
@@ -69,50 +131,94 @@ export default function GillTestScreen() {
   useEffect(() => {
     // Auto-run test when component mounts
     if (connection && selectedCluster) {
-      runBasicTest()
+      runAllTests()
     }
   }, [connection, selectedCluster])
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.card}>
-        <AppText style={styles.title}>Basic Connection Test</AppText>
+        <AppText style={styles.title}>Solana vs Gill Test</AppText>
         <AppText style={styles.subtitle}>
-          Testing basic Solana connection without Anchor/Gill dependencies
+          Comparing standard Solana Web3.js with Gill library
         </AppText>
       </View>
 
       <View style={styles.card}>
         <AppText style={styles.sectionTitle}>Test Controls</AppText>
         <TouchableOpacity
-          style={[styles.button, { opacity: loading || !connection ? 0.5 : 1 }]}
-          onPress={runBasicTest}
-          disabled={loading || !connection}
+          style={[styles.button, { opacity: loading ? 0.5 : 1 }]}
+          onPress={runAllTests}
+          disabled={loading}
         >
           <AppText style={styles.buttonText}>
-            {loading ? "Running Test..." : "Run Connection Test"}
+            {loading ? "Running Tests..." : "Run All Tests"}
           </AppText>
         </TouchableOpacity>
       </View>
 
-      {/* Connection Test Results */}
+      {/* Solana Connection Test */}
       <View style={styles.card}>
-        <AppText style={styles.sectionTitle}>Connection Test</AppText>
+        <AppText style={styles.sectionTitle}>Solana Web3.js Test</AppText>
         <View style={styles.resultRow}>
           <AppText>Status: </AppText>
           <AppText style={[
             styles.status,
-            { color: testResults.connection === true ? '#4ade80' : 
-                     testResults.connection === false ? '#ef4444' : '#6b7280' }
+            { color: testResults.solanaConnection === true ? '#4ade80' : 
+                     testResults.solanaConnection === false ? '#ef4444' : '#6b7280' }
           ]}>
-            {testResults.connection === true ? 'SUCCESS' : 
-             testResults.connection === false ? 'FAILED' : 'PENDING'}
+            {testResults.solanaConnection === true ? 'SUCCESS' : 
+             testResults.solanaConnection === false ? 'FAILED' : 'PENDING'}
           </AppText>
         </View>
-        {testResults.slot && (
+        {testResults.solanaSlot && (
           <View style={styles.resultRow}>
-            <AppText>Current Slot: </AppText>
-            <AppText style={styles.value}>{testResults.slot}</AppText>
+            <AppText>Slot: </AppText>
+            <AppText style={styles.value}>{testResults.solanaSlot}</AppText>
+          </View>
+        )}
+      </View>
+
+      {/* Gill Basic Test */}
+      <View style={styles.card}>
+        <AppText style={styles.sectionTitle}>Gill Basic Test</AppText>
+        <View style={styles.resultRow}>
+          <AppText>Status: </AppText>
+          <AppText style={[
+            styles.status,
+            { color: testResults.gillBasic === true ? '#4ade80' : 
+                     testResults.gillBasic === false ? '#ef4444' : '#6b7280' }
+          ]}>
+            {testResults.gillBasic === true ? 'SUCCESS' : 
+             testResults.gillBasic === false ? 'FAILED' : 'PENDING'}
+          </AppText>
+        </View>
+        {testResults.gillSlot && (
+          <View style={styles.resultRow}>
+            <AppText>Slot: </AppText>
+            <AppText style={styles.value}>{testResults.gillSlot}</AppText>
+          </View>
+        )}
+      </View>
+
+      {/* Gill Program Accounts Test */}
+      <View style={styles.card}>
+        <AppText style={styles.sectionTitle}>Gill Program Accounts Test</AppText>
+        <View style={styles.resultRow}>
+          <AppText>Status: </AppText>
+          <AppText style={[
+            styles.status,
+            { color: testResults.gillProgramAccounts === true ? '#4ade80' : 
+                     testResults.gillProgramAccounts === false ? '#ef4444' : '#6b7280' }
+          ]}>
+            {testResults.gillProgramAccounts === true ? 'SUCCESS' : 
+             testResults.gillProgramAccounts === false ? 'FAILED' : 'PENDING'}
+          </AppText>
+        </View>
+        {testResults.gillAccountCount !== null && (
+          <View style={styles.resultRow}>
+            <AppText>Accounts Found: </AppText>
+            <AppText style={styles.value}>{testResults.gillAccountCount}</AppText>
           </View>
         )}
       </View>
@@ -129,10 +235,10 @@ export default function GillTestScreen() {
       <View style={styles.card}>
         <AppText style={styles.sectionTitle}>Test Information</AppText>
         <AppText style={styles.infoText}>
-          This test verifies basic Solana connection functionality without using Anchor or Gill libraries.
+          This test compares standard Solana Web3.js with the Gill library for React Native compatibility.
         </AppText>
         <AppText style={styles.infoText}>
-          If this test passes, we can then investigate why Anchor/Gill have compatibility issues.
+          If Gill tests pass, we can use it as an alternative to Anchor for reading contract data.
         </AppText>
       </View>
     </ScrollView>
