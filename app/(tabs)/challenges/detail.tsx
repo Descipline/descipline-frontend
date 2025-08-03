@@ -13,6 +13,8 @@ import { ChallengeStatusBadge, ChallengeStatus } from '@/components/descipline/u
 import { UserParticipationCard } from '@/components/descipline/ui/user-participation-card'
 import { ParticipantsList } from '@/components/descipline/ui/participants-list'
 import { ActionConfirmationModal } from '@/components/descipline/ui/action-confirmation-modal'
+import { TransactionProgressModal, TransactionStep } from '@/components/descipline/ui/transaction-progress-modal'
+import { useStakeChallenge, useClaimReward } from '@/components/descipline/use-challenge-transactions'
 
 interface ChallengeParticipant {
   address: string
@@ -86,10 +88,20 @@ export default function ChallengeDetailScreen() {
   } = useGetChallengeWithGill(id)
 
   // Modal states
-  const [isStaking, setIsStaking] = useState(false)
-  const [isClaiming, setIsClaiming] = useState(false)
   const [showStakeModal, setShowStakeModal] = useState(false)
   const [showClaimModal, setShowClaimModal] = useState(false)
+  
+  // Transaction states
+  const [transactionStep, setTransactionStep] = useState<TransactionStep>(TransactionStep.PREPARING)
+  const [transactionSignature, setTransactionSignature] = useState<string>()
+  const [transactionError, setTransactionError] = useState<string>()
+  const [showTransactionModal, setShowTransactionModal] = useState(false)
+  const [currentTransactionMode, setCurrentTransactionMode] = useState<'stake' | 'claim'>('stake')
+  const [currentRewardAmount, setCurrentRewardAmount] = useState<number | undefined>()
+
+  // Transaction hooks
+  const stakeMutation = useStakeChallenge()
+  const claimMutation = useClaimReward()
 
   // Compute derived data
   const challengeData = useMemo(() => {
@@ -160,6 +172,18 @@ export default function ChallengeDetailScreen() {
     })
   }
 
+  const handleTransactionProgress = (step: TransactionStep, data?: any) => {
+    setTransactionStep(step)
+    
+    if (data?.signature) {
+      setTransactionSignature(data.signature)
+    }
+    
+    if (data?.error) {
+      setTransactionError(data.error)
+    }
+  }
+
   const handleJoinChallenge = () => {
     setShowStakeModal(true)
   }
@@ -169,32 +193,75 @@ export default function ChallengeDetailScreen() {
   }
 
   const handleStakeConfirm = async () => {
-    setIsStaking(true)
+    if (!challenge) return
+    
+    // Close confirmation modal, show transaction progress modal
+    setShowStakeModal(false)
+    setShowTransactionModal(true)
+    setTransactionError(undefined)
+    setTransactionSignature(undefined)
+    setCurrentTransactionMode('stake')
+    setCurrentRewardAmount(undefined)
+    
     try {
-      // TODO: Implement actual stake transaction using Anchor or Web3.js
-      // For now, using mock delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      setShowStakeModal(false)
+      await stakeMutation.mutateAsync({
+        challenge,
+        onProgressUpdate: handleTransactionProgress
+      })
+      
+      // Refresh data after successful transaction
       refetch()
     } catch (error) {
-      console.error('Stake failed:', error)
-    } finally {
-      setIsStaking(false)
+      // Error is already handled in the hook
+      console.error('Stake transaction failed:', error)
     }
   }
 
   const handleClaimConfirm = async () => {
-    setIsClaiming(true)
+    if (!challenge) return
+    
+    setShowClaimModal(false)
+    setShowTransactionModal(true)
+    setTransactionError(undefined)
+    setTransactionSignature(undefined)
+    setCurrentTransactionMode('claim')
+    setCurrentRewardAmount(Number(challenge.stakeAmount))
+    
     try {
-      // TODO: Implement actual claim transaction using Anchor or Web3.js
-      // For now, using mock delay
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      setShowClaimModal(false)
+      await claimMutation.mutateAsync({
+        challenge,
+        onProgressUpdate: handleTransactionProgress
+      })
+      
       refetch()
     } catch (error) {
-      console.error('Claim failed:', error)
-    } finally {
-      setIsClaiming(false)
+      console.error('Claim transaction failed:', error)
+    }
+  }
+
+  const handleTransactionClose = () => {
+    setShowTransactionModal(false)
+    // Optionally show success toast or navigate
+    if (transactionStep === TransactionStep.SUCCESS) {
+      // Show success feedback
+    }
+  }
+
+  const handleTransactionRetry = () => {
+    // Retry the last operation
+    if (stakeMutation.isError) {
+      handleStakeConfirm()
+    } else if (claimMutation.isError) {
+      handleClaimConfirm()
+    }
+  }
+
+  const handleViewTransaction = () => {
+    if (transactionSignature) {
+      // Open blockchain explorer
+      const explorerUrl = `https://explorer.solana.com/tx/${transactionSignature}?cluster=devnet`
+      // TODO: Open URL in mobile browser
+      console.log('View transaction:', explorerUrl)
     }
   }
 
@@ -272,7 +339,7 @@ export default function ChallengeDetailScreen() {
           decimals={challengeData.decimals}
           onJoinChallenge={handleJoinChallenge}
           onClaimReward={handleClaimReward}
-          isLoading={isStaking || isClaiming}
+          isLoading={stakeMutation.isPending || claimMutation.isPending}
         />
 
         {/* Challenge Details */}
@@ -335,6 +402,19 @@ export default function ChallengeDetailScreen() {
         />
       </ScrollView>
 
+      {/* Transaction Progress Modal */}
+      <TransactionProgressModal
+        visible={showTransactionModal}
+        step={transactionStep}
+        error={transactionError}
+        signature={transactionSignature}
+        onClose={handleTransactionClose}
+        onRetry={handleTransactionRetry}
+        onViewTransaction={handleViewTransaction}
+        mode={currentTransactionMode}
+        rewardAmount={currentRewardAmount}
+      />
+
       {/* Stake Confirmation Modal */}
       {challenge && (
         <ActionConfirmationModal
@@ -343,7 +423,7 @@ export default function ChallengeDetailScreen() {
           onConfirm={handleStakeConfirm}
           challenge={{...challenge, publicKey: id}}
           creatorAddress={challenge.initiator}
-          loading={isStaking}
+          loading={stakeMutation.isPending}
           realParticipantCount={challengeData?.participants.length}
           mode="stake"
         />
@@ -357,7 +437,7 @@ export default function ChallengeDetailScreen() {
           onConfirm={handleClaimConfirm}
           challenge={{...challenge, publicKey: id}}
           creatorAddress={challenge.initiator}
-          loading={isClaiming}
+          loading={claimMutation.isPending}
           realParticipantCount={challengeData?.participants.length}
           mode="claim"
           rewardAmount={Number(challenge.stakeAmount)}
