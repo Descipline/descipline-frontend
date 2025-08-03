@@ -7,12 +7,13 @@ import { AccountUiButtons } from './account-ui-buttons'
 import { AccountUiBalance } from '@/components/account/account-ui-balance'
 import { AccountUiTokenAccounts } from '@/components/account/account-ui-token-accounts'
 import { WalletUiConnectButton } from '@/components/solana/wallet-ui-dropdown'
-import { RefreshControl, ScrollView } from 'react-native'
+import { RefreshControl, ScrollView, View } from 'react-native'
 import { useCallback, useState } from 'react'
 import { useGetBalanceInvalidate } from '@/components/account/use-get-balance'
 import { PublicKey } from '@solana/web3.js'
 import { useGetTokenAccountsInvalidate } from '@/components/account/use-get-token-accounts'
 import { useAppTheme } from '../app-theme'
+import { GlobalHeader } from '@/components/global-header'
 
 export function AccountFeature() {
   const { account } = useWalletUi()
@@ -27,29 +28,32 @@ export function AccountFeature() {
   }, [invalidateBalance, invalidateTokenAccounts])
 
   return (
-    <AppPage>
-      {account ? (
-        <ScrollView
-          contentContainerStyle={{}}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => onRefresh()} />}
-        >
-          <AppView style={{ alignItems: 'center', gap: 4 }}>
-            <AccountUiBalance address={account.publicKey} />
-            <AppText style={{ opacity: 0.7 }}>{ellipsify(account.publicKey.toString(), 8)}</AppText>
+    <View style={{ flex: 1 }}>
+      <GlobalHeader />
+      <AppPage>
+        {account ? (
+          <ScrollView
+            contentContainerStyle={{}}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => onRefresh()} />}
+          >
+            <AppView style={{ alignItems: 'center', gap: 4 }}>
+              <AccountUiBalance address={account.publicKey} />
+              <AppText style={{ opacity: 0.7 }}>{ellipsify(account.publicKey.toString(), 8)}</AppText>
+            </AppView>
+            <AppView style={{ marginTop: spacing.md, alignItems: 'center' }}>
+              <AccountUiButtons />
+            </AppView>
+            <AppView style={{ marginTop: spacing.md, alignItems: 'center' }}>
+              <AccountUiTokenAccounts address={account.publicKey} />
+            </AppView>
+          </ScrollView>
+        ) : (
+          <AppView style={{ flexDirection: 'column', justifyContent: 'flex-end' }}>
+            <AppText variant="titleMedium">Connect your wallet.</AppText>
+            <WalletUiConnectButton />
           </AppView>
-          <AppView style={{ marginTop: spacing.md, alignItems: 'center' }}>
-            <AccountUiButtons />
-          </AppView>
-          <AppView style={{ marginTop: spacing.md, alignItems: 'center' }}>
-            <AccountUiTokenAccounts address={account.publicKey} />
-          </AppView>
-        </ScrollView>
-      ) : (
-        <AppView style={{ flexDirection: 'column', justifyContent: 'flex-end' }}>
-          <AppText variant="titleMedium">Connect your wallet.</AppText>
-          <WalletUiConnectButton />
-        </AppView>
-      )}
-    </AppPage>
+        )}
+      </AppPage>
+    </View>
   )
 }
