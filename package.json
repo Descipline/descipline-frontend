@@ -69,7 +69,6 @@
     "expo-symbols": "~0.4.5",
     "expo-system-ui": "~5.0.10",
     "expo-web-browser": "~14.2.0",
-    "gill": "^0.10.2",
     "js-base64": "^3.7.7",
     "react": "19.0.0",
     "react-dom": "19.0.0",

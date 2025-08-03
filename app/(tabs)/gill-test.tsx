@@ -1,21 +1,13 @@
 /**
- * Gill Library Test Page
- * Test if gill can read contract data without BN errors
+ * Basic Connection Test Page
+ * Test if basic Solana connection works without Anchor dependencies
  */
 
 import React, { useEffect, useState } from 'react'
-import { View, ScrollView, StyleSheet, Alert } from 'react-native'
+import { View, ScrollView, StyleSheet, Alert, TouchableOpacity } from 'react-native'
 import { AppText } from '@/components/app-text'
-import { AppButton } from '@/components/app-button'
-import { AppCard } from '@/components/app-card'
 import { useConnection } from '@/components/solana/solana-provider'
 import { useCluster } from '@/components/cluster/cluster-provider'
-import { 
-  testGillConnection, 
-  fetchChallengesWithGill, 
-  getChallengeStatsWithGill,
-  type GillChallengeData 
-} from '@/utils/descipline/gill-reader'
 
 export default function GillTestScreen() {
   const connection = useConnection()
@@ -23,17 +15,15 @@ export default function GillTestScreen() {
   const [loading, setLoading] = useState(false)
   const [testResults, setTestResults] = useState<{
     connection: boolean | null
-    challenges: GillChallengeData[]
-    stats: any
+    slot: number | null
     error: string | null
   }>({
     connection: null,
-    challenges: [],
-    stats: null,
+    slot: null,
     error: null
   })
 
-  const runGillTest = async () => {
+  const runBasicTest = async () => {
     if (!connection || !selectedCluster) {
       Alert.alert('Error', 'No Solana connection or cluster available')
       return
@@ -42,56 +32,35 @@ export default function GillTestScreen() {
     setLoading(true)
     setTestResults({
       connection: null,
-      challenges: [],
-      stats: null,
+      slot: null,
       error: null
     })
 
     try {
-      console.log('🧪 Starting gill library test...')
+      console.log('🧪 Starting basic Solana connection test...')
       console.log('🧪 Using RPC:', selectedCluster.endpoint)
 
-      // Test 1: Basic connection
-      console.log('🧪 Test 1: Gill connection test')
-      const connectionTest = await testGillConnection(selectedCluster.endpoint)
+      // Test basic connection by getting current slot
+      const slot = await connection.getSlot()
+      console.log('🧪 Current slot:', slot)
       
-      setTestResults(prev => ({
-        ...prev,
-        connection: connectionTest
-      }))
+      setTestResults({
+        connection: true,
+        slot: slot,
+        error: null
+      })
 
-      if (!connectionTest) {
-        throw new Error('Gill connection test failed')
-      }
-
-      // Test 2: Fetch challenges
-      console.log('🧪 Test 2: Fetch challenges with gill')
-      const challenges = await fetchChallengesWithGill(selectedCluster.endpoint)
-      
-      setTestResults(prev => ({
-        ...prev,
-        challenges
-      }))
-
-      // Test 3: Get statistics
-      console.log('🧪 Test 3: Get statistics with gill')
-      const stats = await getChallengeStatsWithGill(selectedCluster.endpoint)
-      
-      setTestResults(prev => ({
-        ...prev,
-        stats
-      }))
-
-      console.log('✅ All gill tests completed successfully!')
-      Alert.alert('Success', 'Gill library tests completed successfully!')
+      console.log('✅ Basic connection test successful!')
+      Alert.alert('Success', `Connection test successful! Current slot: ${slot}`)
 
     } catch (error: any) {
-      console.error('❌ Gill test error:', error)
-      setTestResults(prev => ({
-        ...prev,
+      console.error('❌ Connection test error:', error)
+      setTestResults({
+        connection: false,
+        slot: null,
         error: error.message || 'Unknown error'
-      }))
-      Alert.alert('Error', `Gill test failed: ${error.message}`)
+      })
+      Alert.alert('Error', `Connection test failed: ${error.message}`)
     } finally {
       setLoading(false)
     }
@@ -100,30 +69,34 @@ export default function GillTestScreen() {
   useEffect(() => {
     // Auto-run test when component mounts
     if (connection && selectedCluster) {
-      runGillTest()
+      runBasicTest()
     }
   }, [connection, selectedCluster])
 
   return (
     <ScrollView style={styles.container}>
-      <AppCard style={styles.header}>
-        <AppText style={styles.title}>Gill Library Test</AppText>
+      <View style={styles.card}>
+        <AppText style={styles.title}>Basic Connection Test</AppText>
         <AppText style={styles.subtitle}>
-          Testing gill library as Anchor alternative for React Native
+          Testing basic Solana connection without Anchor/Gill dependencies
         </AppText>
-      </AppCard>
+      </View>
 
-      <AppCard style={styles.section}>
+      <View style={styles.card}>
         <AppText style={styles.sectionTitle}>Test Controls</AppText>
-        <AppButton
-          title={loading ? "Running Tests..." : "Run Gill Tests"}
-          onPress={runGillTest}
+        <TouchableOpacity
+          style={[styles.button, { opacity: loading || !connection ? 0.5 : 1 }]}
+          onPress={runBasicTest}
           disabled={loading || !connection}
-        />
-      </AppCard>
+        >
+          <AppText style={styles.buttonText}>
+            {loading ? "Running Test..." : "Run Connection Test"}
+          </AppText>
+        </TouchableOpacity>
+      </View>
 
       {/* Connection Test Results */}
-      <AppCard style={styles.section}>
+      <View style={styles.card}>
         <AppText style={styles.sectionTitle}>Connection Test</AppText>
         <View style={styles.resultRow}>
           <AppText>Status: </AppText>
@@ -136,61 +109,32 @@ export default function GillTestScreen() {
              testResults.connection === false ? 'FAILED' : 'PENDING'}
           </AppText>
         </View>
-      </AppCard>
-
-      {/* Challenges Results */}
-      <AppCard style={styles.section}>
-        <AppText style={styles.sectionTitle}>Challenges Data</AppText>
-        <View style={styles.resultRow}>
-          <AppText>Count: </AppText>
-          <AppText style={styles.value}>{testResults.challenges.length}</AppText>
-        </View>
-        {testResults.challenges.map((challenge, index) => (
-          <View key={index} style={styles.challengeItem}>
-            <AppText style={styles.challengeKey}>Challenge {index + 1}:</AppText>
-            <AppText style={styles.challengeValue}>{challenge.publicKey.slice(0, 20)}...</AppText>
-          </View>
-        ))}
-      </AppCard>
-
-      {/* Statistics Results */}
-      {testResults.stats && (
-        <AppCard style={styles.section}>
-          <AppText style={styles.sectionTitle}>Statistics</AppText>
+        {testResults.slot && (
           <View style={styles.resultRow}>
-            <AppText>Total Challenges: </AppText>
-            <AppText style={styles.value}>{testResults.stats.totalChallenges}</AppText>
+            <AppText>Current Slot: </AppText>
+            <AppText style={styles.value}>{testResults.slot}</AppText>
           </View>
-          <View style={styles.resultRow}>
-            <AppText>Active Challenges: </AppText>
-            <AppText style={styles.value}>{testResults.stats.activeChallenges}</AppText>
-          </View>
-          <View style={styles.resultRow}>
-            <AppText>Total Receipts: </AppText>
-            <AppText style={styles.value}>{testResults.stats.totalReceipts}</AppText>
-          </View>
-        </AppCard>
-      )}
+        )}
+      </View>
 
       {/* Error Display */}
       {testResults.error && (
-        <AppCard style={styles.section}>
+        <View style={styles.card}>
           <AppText style={styles.sectionTitle}>Error</AppText>
           <AppText style={styles.errorText}>{testResults.error}</AppText>
-        </AppCard>
+        </View>
       )}
 
       {/* Test Info */}
-      <AppCard style={styles.section}>
+      <View style={styles.card}>
         <AppText style={styles.sectionTitle}>Test Information</AppText>
         <AppText style={styles.infoText}>
-          This test verifies if the gill library can successfully read Descipline contract data 
-          without encountering the BN initialization errors that affect Anchor in React Native.
+          This test verifies basic Solana connection functionality without using Anchor or Gill libraries.
         </AppText>
         <AppText style={styles.infoText}>
-          If all tests pass, we can use gill for data reading while keeping Anchor for write operations.
+          If this test passes, we can then investigate why Anchor/Gill have compatibility issues.
         </AppText>
-      </AppCard>
+      </View>
     </ScrollView>
   )
 }
@@ -200,9 +144,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000',
   },
-  header: {
+  card: {
     margin: 16,
-    padding: 20,
+    padding: 16,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#333333',
   },
   title: {
     fontSize: 24,
@@ -214,16 +162,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#9ca3af',
   },
-  section: {
-    margin: 16,
-    marginTop: 8,
-    padding: 16,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#ffffff',
     marginBottom: 12,
+  },
+  button: {
+    backgroundColor: '#9945ff',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
   },
   resultRow: {
     flexDirection: 'row',
@@ -237,19 +192,6 @@ const styles = StyleSheet.create({
   value: {
     color: '#9945ff',
     fontWeight: '600',
-  },
-  challengeItem: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    paddingLeft: 8,
-  },
-  challengeKey: {
-    color: '#6b7280',
-    minWidth: 100,
-  },
-  challengeValue: {
-    color: '#ffffff',
-    fontFamily: 'monospace',
   },
   errorText: {
     color: '#ef4444',
