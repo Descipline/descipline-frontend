@@ -12,10 +12,7 @@ interface UserStatsCardProps {
 }
 
 export function UserStatsCard({ stats, isLoading }: UserStatsCardProps) {
-  console.log('📊 UserStatsCard: Render with props:', { stats, isLoading })
-  
   if (isLoading) {
-    console.log('⏳ UserStatsCard: Showing loading state')
     return (
       <View style={styles.container}>
         <LinearGradient
@@ -31,11 +28,8 @@ export function UserStatsCard({ stats, isLoading }: UserStatsCardProps) {
   }
 
   if (!stats) {
-    console.log('❌ UserStatsCard: No stats data, returning null')
     return null
   }
-  
-  console.log('✅ UserStatsCard: Rendering stats:', stats)
 
   const statItems = [
     {

@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 const REDIRECT_KEY = 'redirectAfterAuth'
 
 export function useWalletGuard() {
-  const { account, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
   const hasRedirected = useRef(false)
@@ -26,7 +26,7 @@ export function useWalletGuard() {
     const isAllowed = allowedPaths.some(path => pathname === path)
 
     // If on a protected page without wallet, redirect to sign-in
-    if (!isAllowed && !account && !hasRedirected.current) {
+    if (!isAllowed && !isAuthenticated && !hasRedirected.current) {
       hasRedirected.current = true
       
       // Store current path for redirect after login
@@ -34,17 +34,17 @@ export function useWalletGuard() {
         AsyncStorage.setItem(REDIRECT_KEY, pathname).catch(console.error)
       }
       
-      console.log(`🔒 Wallet guard: Redirecting from ${pathname} to /sign-in (wallet not connected)`)
+      console.log(`🔒 Wallet guard: Redirecting from ${pathname} to /sign-in (wallet not authenticated)`)
       router.replace('/sign-in')
     }
 
-    // Reset redirect flag when account changes
-    if (account) {
+    // Reset redirect flag when authenticated
+    if (isAuthenticated) {
       hasRedirected.current = false
     }
-  }, [account, isLoading, pathname, router])
+  }, [isAuthenticated, isLoading, pathname, router])
 
-  return { account, isLoading }
+  return { isAuthenticated, isLoading }
 }
 
 // Helper function to handle redirect after successful login

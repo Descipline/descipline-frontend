@@ -236,9 +236,9 @@ export function ActionConfirmationModal({
               <View style={styles.detailsCard}>
                 <DetailRow
                   label="Challenge Contract"
-                  value={`${challenge.publicKey?.toString().slice(0, 8)}...${challenge.publicKey?.toString().slice(-8)}`}
+                  value={challenge.publicKey ? `${challenge.publicKey.toString().slice(0, 8)}...${challenge.publicKey.toString().slice(-8)}` : 'Loading...'}
                   fullValue={challenge.publicKey?.toString()}
-                  copyable
+                  copyable={!!challenge.publicKey}
                   icon="doc.text.fill"
                 />
                 <DetailRow

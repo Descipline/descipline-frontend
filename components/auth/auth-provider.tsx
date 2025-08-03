@@ -7,8 +7,10 @@ import { useMutation } from '@tanstack/react-query'
 export interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
+  account: Account | null
   signIn: () => Promise<Account>
   signOut: () => Promise<void>
+  disconnect: () => Promise<void>
 }
 
 const Context = createContext<AuthState>({} as AuthState)
@@ -35,17 +37,19 @@ function useSignInMutation() {
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const { disconnect } = useMobileWallet()
-  const { accounts, isLoading } = useAuthorization()
+  const { accounts, selectedAccount, isLoading } = useAuthorization()
   const signInMutation = useSignInMutation()
 
   const value: AuthState = useMemo(
     () => ({
       signIn: async () => await signInMutation.mutateAsync(),
       signOut: async () => await disconnect(),
+      disconnect: async () => await disconnect(),
       isAuthenticated: (accounts?.length ?? 0) > 0,
       isLoading: signInMutation.isPending || isLoading,
+      account: selectedAccount,
     }),
-    [accounts, disconnect, signInMutation, isLoading],
+    [accounts, selectedAccount, disconnect, signInMutation, isLoading],
   )
 
   return <Context value={value}>{children}</Context>

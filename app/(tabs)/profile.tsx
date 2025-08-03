@@ -22,28 +22,8 @@ export default function Profile() {
   const participatedQuery = useUserParticipatedChallenges()
   const statsQuery = useUserStats()
   
-  // Debug profile state
-  console.log('🏠 Profile: Component render state:')
-  console.log('👤 Profile: Account:', account?.publicKey?.toString())
-  console.log('📈 Profile: Stats query:', { 
-    data: statsQuery.data, 
-    isLoading: statsQuery.isLoading, 
-    error: statsQuery.error 
-  })
-  console.log('📝 Profile: Created query:', { 
-    data: createdQuery.data?.length, 
-    isLoading: createdQuery.isLoading, 
-    error: createdQuery.error 
-  })
-  console.log('🎯 Profile: Participated query:', { 
-    data: participatedQuery.data?.length, 
-    isLoading: participatedQuery.isLoading, 
-    error: participatedQuery.error 
-  })
-  
   // Prevent rendering if account is null (will be redirected by guard)
   if (!account) {
-    console.log('❌ Profile: No account, returning null')
     return null
   }
 
