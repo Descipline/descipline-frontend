@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Modal, TouchableOpacity, Linking } from 'react-native'
+import { View, StyleSheet, Modal, TouchableOpacity, Linking, Platform } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { AppText } from '@/components/app-text'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
@@ -304,7 +304,7 @@ export function TransactionProgressModal({
                       onPress={() => copyToClipboard(signature, 'Transaction hash')}
                       activeOpacity={0.8}
                     >
-                      <UiIconSymbol name="doc.on.doc" size={14} color="#ffffff" />
+                      <UiIconSymbol name="doc.on.doc" size={16} color="#ffffff" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -321,15 +321,49 @@ export function TransactionProgressModal({
                 )}
               </View>
 
-              {/* Explorer Button */}
-              <TouchableOpacity
-                style={styles.explorerButton}
-                onPress={openExplorer}
-                activeOpacity={0.8}
-              >
-                <UiIconSymbol name="safari" size={16} color="#ffffff" />
-                <AppText style={styles.explorerText}>View on Explorer</AppText>
-              </TouchableOpacity>
+              {/* Action Buttons */}
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={styles.explorerButton}
+                  onPress={openExplorer}
+                  activeOpacity={0.8}
+                >
+                  <UiIconSymbol name="safari" size={18} color="#ffffff" />
+                  <AppText style={styles.explorerButtonText}>View on Explorer</AppText>
+                </TouchableOpacity>
+
+                {txStatus === TransactionStatus.FINALIZED && (
+                  <TouchableOpacity
+                    style={styles.viewChallengeButton}
+                    onPress={onClose}
+                    activeOpacity={0.8}
+                  >
+                    <LinearGradient
+                      colors={[SolanaColors.brand.purple, '#dc1fff']}
+                      style={styles.viewChallengeButtonGradient}
+                    />
+                    <UiIconSymbol name="arrow.right.circle.fill" size={20} color="#ffffff" />
+                    <AppText style={styles.viewChallengeButtonText}>Continue</AppText>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Next Steps (shown when finalized) */}
+              {txStatus === TransactionStatus.FINALIZED && (
+                <View style={styles.nextStepsCard}>
+                  <UiIconSymbol name="lightbulb.fill" size={20} color="#f59e0b" />
+                  <View style={styles.nextStepsContent}>
+                    <AppText style={styles.nextStepsTitle}>What's Next?</AppText>
+                    <AppText style={styles.nextStepsText}>
+                      {mode === 'claim' ? (
+                        `• Your reward has been transferred to your wallet{"\n"}• Check your wallet balance for the claimed tokens{"\n"}• Congratulations on completing the challenge!`
+                      ) : (
+                        `• You're now a participant in this challenge{"\n"}• Wait for the challenge to end for results{"\n"}• Winners can claim rewards after resolution`
+                      )}
+                    </AppText>
+                  </View>
+                </View>
+              )}
             </>
           )}
 
@@ -344,12 +378,10 @@ export function TransactionProgressModal({
             </TouchableOpacity>
           )}
 
-          {canClose && (
+          {/* Only show close button for non-SUCCESS states or when not finalized */}
+          {canClose && step !== TransactionStep.SUCCESS && (
             <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <AppText style={styles.closeButtonText}>
-                {step === TransactionStep.SUCCESS && txStatus === TransactionStatus.FINALIZED ? 'Continue' : 
-                 step === TransactionStep.SUCCESS ? 'Close' : 'Close'}
-              </AppText>
+              <AppText style={styles.closeButtonText}>Close</AppText>
             </TouchableOpacity>
           )}
         </View>
@@ -456,51 +488,52 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   statusCard: {
-    backgroundColor: 'rgba(153, 69, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    minWidth: 200,
   },
   statusIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'center',
+    gap: 8,
   },
   statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 8,
   },
   statusText: {
     fontSize: 14,
-    fontWeight: '500',
     color: '#ffffff',
+    fontWeight: '500',
   },
   confirmationsText: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center',
+    marginTop: 8,
   },
   detailsCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 24,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    width: '100%',
   },
   detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    paddingVertical: 8,
   },
   detailLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginBottom: 4,
   },
   detailValueRow: {
     flexDirection: 'row',
@@ -508,30 +541,85 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   detailValue: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#ffffff',
     fontFamily: 'monospace',
-    fontWeight: '500',
   },
   copyButton: {
-    padding: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 8,
+    marginLeft: 8,
+    backgroundColor: 'rgba(153, 69, 255, 0.1)',
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(153, 69, 255, 0.3)',
+    minWidth: 32,
+    minHeight: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actions: {
+    gap: 12,
+    marginBottom: 24,
+    width: '100%',
   },
   explorerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderRadius: 12,
-    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     gap: 8,
   },
-  explorerText: {
-    fontSize: 14,
-    fontWeight: '500',
+  explorerButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#ffffff',
+  },
+  viewChallengeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    gap: 8,
+    overflow: 'hidden',
+  },
+  viewChallengeButtonGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  viewChallengeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  nextStepsCard: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    gap: 12,
+    width: '100%',
+  },
+  nextStepsContent: {
+    flex: 1,
+  },
+  nextStepsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#f59e0b',
+    marginBottom: 4,
+  },
+  nextStepsText: {
+    fontSize: 13,
+    color: 'rgba(245, 158, 11, 0.9)',
+    lineHeight: 20,
   },
 })
