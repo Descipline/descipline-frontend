@@ -32,8 +32,20 @@ export function DesciplineProvider({ children }: { children: React.ReactNode }) 
     try {
       console.log('🔄 Creating Anchor program for template architecture...')
       
-      // Safely create program ID from constants
-      const programId = DESCIPLINE_CONFIG.PROGRAM_ID
+      // Check if required globals are available
+      if (typeof global.Buffer === 'undefined') {
+        console.error('❌ Buffer not found in global scope')
+        return null
+      }
+      
+      if (typeof global.TextEncoder === 'undefined') {
+        console.error('❌ TextEncoder not found in global scope')
+        return null
+      }
+      
+      // Safely create program ID from constants with explicit string
+      const programIdString = 'J5qn6hBAMS1YfNpN7oARJZmdjSqnsMT5Zz33tHGmLiK'
+      const programId = new PublicKey(programIdString)
       console.log('✅ Program ID created:', programId.toString())
       
       // Create a dummy wallet for read-only operations
@@ -79,7 +91,7 @@ export function DesciplineProvider({ children }: { children: React.ReactNode }) 
   const value = useMemo(
     () => ({
       program,
-      programId: DESCIPLINE_CONFIG.PROGRAM_ID,
+      programId: new PublicKey('J5qn6hBAMS1YfNpN7oARJZmdjSqnsMT5Zz33tHGmLiK'),
     }),
     [program]
   )
