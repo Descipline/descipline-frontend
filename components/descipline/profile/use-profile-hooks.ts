@@ -39,8 +39,8 @@ export function useUserParticipatedChallenges() {
     queryFn: async () => {
       if (!account?.publicKey) return []
       
-      // TODO: Implement gill-based receipt reading for participated challenges
-      // For now return empty array since we need to implement receipt reading
+      // Participated challenges tracking not yet implemented
+      // This requires reading Receipt PDAs from the blockchain
       return []
     },
     enabled: !!account?.publicKey,
@@ -62,7 +62,7 @@ export function useUserStats() {
         totalCreated: created.length,
         totalParticipated: participated.length,
         totalWon: participated.filter(c => (c as any).userStatus === 'winner').length,
-        totalEarned: 0, // TODO: Calculate from won challenges
+        totalEarned: 0, // Earnings calculation not yet implemented
       }
     },
     enabled: !createdQuery.isLoading && !participatedQuery.isLoading,

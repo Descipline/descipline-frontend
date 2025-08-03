@@ -27,15 +27,15 @@ export function useStakeChallenge() {
         onProgressUpdate(TransactionStep.PREPARING)
         
         // Build the actual stake transaction
-        // For now, we'll create a simple transfer as a placeholder
-        // TODO: Replace with actual Descipline program stake instruction
+        // Note: This is a placeholder transaction
+        // Real implementation should use Descipline program stake instruction
         const transaction = new Transaction()
         
         // Get latest blockhash
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
         
-        // Add a simple memo instruction as placeholder
-        // In real implementation, this would be the stake instruction
+        // Note: Using placeholder transfer instruction
+        // Real implementation would call Descipline program stake function
         transaction.add(
           SystemProgram.transfer({
             fromPubkey: account.publicKey,
@@ -96,8 +96,8 @@ export function useClaimReward() {
         
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
         
-        // Add claim instruction (placeholder)
-        // TODO: Replace with actual Descipline program claim instruction
+        // Note: This is a placeholder claim instruction
+        // Real implementation should use Descipline program claim instruction
         transaction.add(
           SystemProgram.transfer({
             fromPubkey: account.publicKey,

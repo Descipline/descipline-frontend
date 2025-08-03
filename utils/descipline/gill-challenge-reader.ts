@@ -471,12 +471,12 @@ export async function getChallengeParticipantsWithGill(
               // This is a workaround since we can't reverse PDA easily
               // In production, you'd want a more robust solution
               
-              // For now, we'll use a placeholder approach
-              // Each receipt represents a participant
+              // Note: Using receipt PDA address as participant identifier
+              // This is a limitation since we can't easily reverse-engineer the challenger address
               participants.push({
-                address: account.pubkey.slice(0, 44), // Use receipt address as placeholder
+                address: account.pubkey.slice(0, 44), // Receipt PDA address (not challenger address)
                 stakeAmount: challengeStakeAmount,
-                participationTime: new Date(Date.now() - Math.random() * 86400000) // Mock time
+                participationTime: new Date() // Current time as estimation
               })
             }
           }

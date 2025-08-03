@@ -135,8 +135,8 @@ export default function ChallengeDetailScreen() {
     }
 
     const isCreator = account && challenge.initiator === account.publicKey.toString()
-    const tokenSymbol = 'USDC' // TODO: Get from challenge data
-    const decimals = 6 // TODO: Get from challenge data
+    const tokenSymbol = 'USDC' // Currently hardcoded, should be derived from challenge.tokenAllowed
+    const decimals = 6 // Currently hardcoded for USDC
     
     // Use real participants data from gill
     const participants: ChallengeParticipant[] = realParticipants?.map(p => ({
@@ -280,7 +280,7 @@ export default function ChallengeDetailScreen() {
     if (transactionSignature) {
       // Open blockchain explorer
       const explorerUrl = `https://explorer.solana.com/tx/${transactionSignature}?cluster=devnet`
-      // TODO: Open URL in mobile browser
+      // Note: URL logging only, mobile browser opening not implemented
       console.log('View transaction:', explorerUrl)
     }
   }
