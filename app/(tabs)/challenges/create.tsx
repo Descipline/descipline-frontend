@@ -1,9 +1,10 @@
 import React from 'react'
-import { View } from 'react-native'
+import { ChallengeCreateEnhanced } from '@/components/descipline/challenge/challenge-create-enhanced'
 import { useWalletGuard } from '@/hooks/use-wallet-guard'
 
 export default function CreateChallengeScreen() {
+  // Protect this route - require wallet connection
   useWalletGuard()
   
-  return <View style={{ flex: 1, backgroundColor: '#1a1a1a' }} />
+  return <ChallengeCreateEnhanced />
 }
