@@ -25,6 +25,11 @@ export function getDesciplinePublicKeys() {
 }
 
 export const DESCIPLINE_CONFIG = {
+  // Use lazy initialization to avoid React Native PublicKey issues
+  get PROGRAM_ID() { return new PublicKey(ADDRESSES.PROGRAM_ID) },
+  get CREDENTIAL_PDA() { return new PublicKey(ADDRESSES.CREDENTIAL_PDA) },
+  get SCHEMA_PDA() { return new PublicKey(ADDRESSES.SCHEMA_PDA) },
+  
   // Use address strings instead of PublicKey objects
   PROGRAM_ID_STRING: ADDRESSES.PROGRAM_ID,
   HELIUS_API_KEY: process.env.EXPO_PUBLIC_HELIUS_API_KEY || '',
