@@ -1,81 +1,332 @@
-import { View, ScrollView } from 'react-native'
+import React from 'react'
+import { FlatList, RefreshControl, TouchableOpacity, View, StyleSheet } from 'react-native'
 import { AppText } from '@/components/app-text'
 import { AppPage } from '@/components/app-page'
-import { useGetChallenges, useTestConnection } from '@/components/descipline/use-challenge-hooks'
-import { ActivityIndicator } from 'react-native'
 import { SolanaColors } from '@/constants/colors'
+import { 
+  useGetChallengesWithGill,
+  useGetProgramStatsWithGill,
+  useTestGillConnection 
+} from '@/components/descipline/use-gill-challenge-hooks'
+import { ChallengeCard } from '@/components/descipline/challenge-card'
+import { useRouter } from 'expo-router'
 
 export default function ChallengesScreen() {
-  const { data: challenges, isLoading, error } = useGetChallenges()
-  const { data: connectionTest } = useTestConnection()
+  const router = useRouter()
+  
+  const { 
+    data: challenges, 
+    isLoading, 
+    error,
+    refetch 
+  } = useGetChallengesWithGill()
+  
+  const { 
+    data: stats 
+  } = useGetProgramStatsWithGill()
+  
+  const { 
+    data: connectionTest 
+  } = useTestGillConnection()
 
-  return (
-    <AppPage>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
-        <AppText type="title" style={{ marginBottom: 16, textAlign: 'center' }}>
-          Challenges
-        </AppText>
+  const handleChallengePress = (challengeId: string) => {
+    router.push(`/challenges/detail?id=${challengeId}`)
+  }
 
-        {/* Connection Test Info */}
-        <View style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', padding: 12, borderRadius: 8, marginBottom: 16 }}>
-          <AppText type="defaultSemiBold" style={{ marginBottom: 8 }}>Connection Status:</AppText>
-          <AppText>Program: {connectionTest?.hasProgram ? '✅' : '❌'}</AppText>
-          <AppText>Wallet: {connectionTest?.hasWallet ? '✅' : '❌'}</AppText>
-          <AppText>Connection: {connectionTest?.hasConnection ? '✅' : '❌'}</AppText>
-          {connectionTest?.programId && (
-            <AppText style={{ fontSize: 12, opacity: 0.7 }}>
-              Program ID: {connectionTest.programId.slice(0, 8)}...
+  const renderChallenge = ({ item }) => {
+    return (
+      <ChallengeCard
+        challenge={item}
+        onPress={() => handleChallengePress(item.publicKey)}
+      />
+    )
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <AppPage>
+        <View style={styles.errorContainer}>
+          <AppText style={styles.errorIcon}>⚠️</AppText>
+          <AppText style={styles.errorTitle}>Failed to Load Challenges</AppText>
+          <AppText style={styles.errorSubtext}>
+            {error instanceof Error ? error.message : 'Something went wrong'}
+          </AppText>
+          <TouchableOpacity onPress={refetch} style={styles.retryButton}>
+            <AppText style={styles.retryButtonText}>Try Again</AppText>
+          </TouchableOpacity>
+        </View>
+      </AppPage>
+    )
+  }
+
+  if (!challenges && isLoading) {
+    return (
+      <AppPage>
+        <View style={styles.loadingContainer}>
+          <AppText style={styles.loadingIcon}>⏳</AppText>
+          <AppText style={styles.loadingText}>Loading challenges...</AppText>
+          <AppText style={styles.loadingSubtext}>Fetching the latest challenges from the blockchain</AppText>
+        </View>
+      </AppPage>
+    )
+  }
+
+  const HeaderComponent = () => (
+    <View style={styles.header}>
+      <AppText style={styles.title}>Challenges</AppText>
+      
+      {/* Stats Overview */}
+      {stats && (
+        <View style={styles.statsContainer}>
+          <AppText style={styles.statsTitle}>Program Statistics</AppText>
+          <View style={styles.statsGrid}>
+            <View style={styles.statItem}>
+              <AppText style={styles.statValue}>{stats.totalChallenges}</AppText>
+              <AppText style={styles.statLabel}>Total</AppText>
+            </View>
+            <View style={styles.statItem}>
+              <AppText style={[styles.statValue, { color: '#10b981' }]}>{stats.activeChallenges}</AppText>
+              <AppText style={styles.statLabel}>Active</AppText>
+            </View>
+            <View style={styles.statItem}>
+              <AppText style={[styles.statValue, { color: '#f59e0b' }]}>{stats.totalReceipts}</AppText>
+              <AppText style={styles.statLabel}>Receipts</AppText>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Connection Status */}
+      {connectionTest && (
+        <View style={styles.connectionContainer}>
+          <AppText style={styles.connectionText}>
+            Connection: {connectionTest.success ? '🟢 Online' : '🔴 Offline'}
+          </AppText>
+          {connectionTest.error && (
+            <AppText style={styles.connectionError}>
+              {connectionTest.error}
             </AppText>
           )}
         </View>
+      )}
 
-        {/* Challenge List */}
-        {isLoading ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
-            <ActivityIndicator size="large" color={SolanaColors.brand.purple} />
-            <AppText style={{ marginTop: 8 }}>Loading challenges...</AppText>
-          </View>
-        ) : error ? (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
-            <AppText type="defaultSemiBold" style={{ color: '#ef4444', marginBottom: 8 }}>
-              Error loading challenges
+      {challenges && challenges.length > 0 && (
+        <AppText style={styles.challengeCount}>
+          Found {challenges.length} challenge{challenges.length !== 1 ? 's' : ''}
+        </AppText>
+      )}
+    </View>
+  )
+
+  return (
+    <AppPage>
+      <FlatList
+        data={challenges || []}
+        renderItem={renderChallenge}
+        keyExtractor={(item, index) => item?.publicKey || `challenge-${index}`}
+        ListHeaderComponent={HeaderComponent}
+        refreshControl={
+          <RefreshControl 
+            refreshing={isLoading} 
+            onRefresh={refetch}
+            tintColor={SolanaColors.brand.purple}
+            colors={[SolanaColors.brand.purple]}
+          />
+        }
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        initialNumToRender={5}
+        getItemLayout={(data, index) => ({
+          length: 150, // Approximate height of each challenge card
+          offset: 150 * index,
+          index,
+        })}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <AppText style={styles.emptyIcon}>🏆</AppText>
+            <AppText style={styles.emptyTitle}>No Challenges Yet</AppText>
+            <AppText style={styles.emptySubtitle}>
+              Be the first to create a challenge and start competing!
             </AppText>
-            <AppText style={{ textAlign: 'center', opacity: 0.7 }}>
-              {error instanceof Error ? error.message : 'Unknown error'}
-            </AppText>
-          </View>
-        ) : challenges && challenges.length > 0 ? (
-          challenges.map((challenge, index) => (
-            <View 
-              key={challenge.publicKey?.toString() || index} 
-              style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.05)', 
-                padding: 16, 
-                borderRadius: 12, 
-                marginBottom: 12,
-                borderLeftWidth: 3,
-                borderLeftColor: SolanaColors.brand.purple
-              }}
+            <TouchableOpacity
+              style={styles.refreshButton}
+              onPress={refetch}
             >
-              <AppText type="defaultSemiBold" style={{ marginBottom: 4 }}>
-                Challenge #{index + 1}
-              </AppText>
-              <AppText style={{ fontSize: 12, opacity: 0.7 }}>
-                {challenge.publicKey?.toString().slice(0, 16)}...
-              </AppText>
-            </View>
-          ))
-        ) : (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
-            <AppText type="defaultSemiBold" style={{ marginBottom: 8 }}>
-              No challenges found
-            </AppText>
-            <AppText style={{ textAlign: 'center', opacity: 0.7 }}>
-              There are currently no challenges available on this network.
-            </AppText>
+              <AppText style={styles.refreshButtonText}>Refresh</AppText>
+            </TouchableOpacity>
           </View>
-        )}
-      </ScrollView>
+        }
+      />
     </AppPage>
   )
 }
+
+const styles = StyleSheet.create({
+  header: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  statsContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  statsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: SolanaColors.brand.purple,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '500',
+  },
+  connectionContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  connectionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  connectionError: {
+    fontSize: 12,
+    color: '#ef4444',
+    marginTop: 4,
+  },
+  challengeCount: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 80,
+  },
+  loadingIcon: {
+    fontSize: 48,
+  },
+  loadingText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  loadingSubtext: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  listContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 80,
+  },
+  emptyIcon: {
+    fontSize: 64,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginTop: 24,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  refreshButton: {
+    backgroundColor: SolanaColors.brand.purple,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  refreshButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 80,
+  },
+  errorIcon: {
+    fontSize: 48,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorSubtext: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  retryButton: {
+    backgroundColor: SolanaColors.brand.purple,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+})
