@@ -55,6 +55,15 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="person.fill" color={color} />,
         }}
       />
+      
+      {/* Gill Test - Temporary for debugging */}
+      <Tabs.Screen 
+        name="gill-test" 
+        options={{
+          title: 'Gill Test',
+          tabBarIcon: ({ color }) => <UiIconSymbol size={24} name="flask.fill" color={color} />,
+        }}
+      />
     </Tabs>
   )
 }
