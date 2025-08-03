@@ -67,30 +67,12 @@ export default function SignInScreen() {
             ) : (
               <>
                 <UiIconSymbol name="link" size={20} color="#ffffff" />
-                <AppText style={styles.connectButtonText}>Connect Mobile Wallet</AppText>
+                <AppText style={styles.connectButtonText}>CONNECT</AppText>
               </>
             )}
           </TouchableOpacity>
         </View>
 
-        {/* Platform Info */}
-        <View style={styles.infoContainer}>
-          <AppText style={styles.infoText}>
-            Using Mobile Wallet Adapter for secure connections.
-          </AppText>
-        </View>
-
-        {/* Debug Info */}
-        <View style={styles.debugContainer}>
-          <AppText style={styles.debugText}>
-            Platform: Mobile | Strategy: Mobile Wallet Adapter
-          </AppText>
-          {account && (
-            <AppText style={styles.debugText}>
-              Connected: {account.publicKey.toString().slice(0, 8)}...{account.publicKey.toString().slice(-8)}
-            </AppText>
-          )}
-        </View>
       </View>
     </AppView>
   )

@@ -19,7 +19,7 @@ export function useUserCreatedChallenges() {
       if (!account?.publicKey || !allChallenges) return []
       
       return allChallenges.filter(challenge => 
-        challenge.initiator === account.publicKey.toString()
+        challenge.initiator === account.publicKey?.toString()
       )
     },
     enabled: !!account?.publicKey && !!allChallenges && !challengesLoading,
