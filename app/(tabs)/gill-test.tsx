@@ -9,6 +9,7 @@ import { AppText } from '@/components/app-text'
 import { useConnection } from '@/components/solana/solana-provider'
 import { useCluster } from '@/components/cluster/cluster-provider'
 import { testGillBasic, testGillProgramAccounts } from '@/utils/gill-simple'
+import { testDesciplineContractWithGill, type GillStats, type GillChallengeData } from '@/utils/descipline/gill-challenge-reader'
 
 export default function GillTestScreen() {
   const connection = useConnection()
@@ -21,6 +22,9 @@ export default function GillTestScreen() {
     gillSlot: number | null
     gillProgramAccounts: boolean | null
     gillAccountCount: number | null
+    desciplineContract: boolean | null
+    desciplineStats: GillStats | null
+    desciplineSample: GillChallengeData | null
     error: string | null
   }>({
     solanaConnection: null,
@@ -29,6 +33,9 @@ export default function GillTestScreen() {
     gillSlot: null,
     gillProgramAccounts: null,
     gillAccountCount: null,
+    desciplineContract: null,
+    desciplineStats: null,
+    desciplineSample: null,
     error: null
   })
 
@@ -41,6 +48,9 @@ export default function GillTestScreen() {
       gillSlot: null,
       gillProgramAccounts: null,
       gillAccountCount: null,
+      desciplineContract: null,
+      desciplineStats: null,
+      desciplineSample: null,
       error: null
     })
 
@@ -114,8 +124,32 @@ export default function GillTestScreen() {
         console.error('❌ Gill program accounts test failed:', error)
       }
 
+      // Test 4: Descipline contract specific
+      console.log('🧪 Test 4: Descipline contract with Gill')
+      try {
+        const desciplineResult = await testDesciplineContractWithGill(selectedCluster?.endpoint)
+        setTestResults(prev => ({
+          ...prev,
+          desciplineContract: desciplineResult.success,
+          desciplineStats: desciplineResult.stats || null,
+          desciplineSample: desciplineResult.sampleChallenge || null
+        }))
+        
+        if (!desciplineResult.success) {
+          throw new Error(desciplineResult.error)
+        }
+        console.log('✅ Descipline contract test successful')
+      } catch (error) {
+        setTestResults(prev => ({
+          ...prev,
+          desciplineContract: false,
+          error: prev.error ? `${prev.error}; Descipline: ${error.message}` : `Descipline: ${error.message}`
+        }))
+        console.error('❌ Descipline contract test failed:', error)
+      }
+
       console.log('🧪 All tests completed')
-      Alert.alert('Tests Complete', 'Check results below')
+      Alert.alert('Tests Complete', 'Check results below. If Descipline test passes, we can use Gill!')
 
     } catch (error: any) {
       console.error('❌ Test suite error:', error)
@@ -223,6 +257,48 @@ export default function GillTestScreen() {
         )}
       </View>
 
+      {/* Descipline Contract Test */}
+      <View style={styles.card}>
+        <AppText style={styles.sectionTitle}>Descipline Contract Test</AppText>
+        <View style={styles.resultRow}>
+          <AppText>Status: </AppText>
+          <AppText style={[
+            styles.status,
+            { color: testResults.desciplineContract === true ? '#4ade80' : 
+                     testResults.desciplineContract === false ? '#ef4444' : '#6b7280' }
+          ]}>
+            {testResults.desciplineContract === true ? 'SUCCESS' : 
+             testResults.desciplineContract === false ? 'FAILED' : 'PENDING'}
+          </AppText>
+        </View>
+        
+        {testResults.desciplineStats && (
+          <>
+            <View style={styles.resultRow}>
+              <AppText>Total Challenges: </AppText>
+              <AppText style={styles.value}>{testResults.desciplineStats.totalChallenges}</AppText>
+            </View>
+            <View style={styles.resultRow}>
+              <AppText>Active Challenges: </AppText>
+              <AppText style={styles.value}>{testResults.desciplineStats.activeChallenges}</AppText>
+            </View>
+            <View style={styles.resultRow}>
+              <AppText>Total Receipts: </AppText>
+              <AppText style={styles.value}>{testResults.desciplineStats.totalReceipts}</AppText>
+            </View>
+          </>
+        )}
+        
+        {testResults.desciplineSample && (
+          <View style={styles.sampleChallenge}>
+            <AppText style={styles.sampleTitle}>Sample Challenge:</AppText>
+            <AppText style={styles.sampleText}>Name: {testResults.desciplineSample.name}</AppText>
+            <AppText style={styles.sampleText}>Token: {testResults.desciplineSample.tokenAllowed}</AppText>
+            <AppText style={styles.sampleText}>Active: {testResults.desciplineSample.isActive ? 'Yes' : 'No'}</AppText>
+          </View>
+        )}
+      </View>
+
       {/* Error Display */}
       {testResults.error && (
         <View style={styles.card}>
@@ -310,5 +386,23 @@ const styles = StyleSheet.create({
     color: '#9ca3af',
     lineHeight: 20,
     marginBottom: 8,
+  },
+  sampleChallenge: {
+    backgroundColor: '#2a2a2a',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#9945ff',
+  },
+  sampleTitle: {
+    color: '#ffffff',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  sampleText: {
+    color: '#9ca3af',
+    fontSize: 14,
+    marginBottom: 4,
   }
 })
