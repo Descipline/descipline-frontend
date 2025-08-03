@@ -67,6 +67,14 @@ const MAPPING = {
   'gift': 'card-giftcard',
   'flag.fill': 'flag',
   'clock.arrow.circlepath': 'update',
+  // Transaction modal icons
+  'gear': 'settings',
+  'hand.raised.fill': 'pan-tool',
+  'paperplane.fill': 'send',
+  'xmark.circle.fill': 'cancel',
+  'safari': 'open-in-browser',
+  'arrow.right.circle.fill': 'arrow-circle-right',
+  'lightbulb.fill': 'lightbulb',
 } as UiIconMapping
 
 /**

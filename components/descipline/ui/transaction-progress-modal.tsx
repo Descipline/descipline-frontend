@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Modal, TouchableOpacity, Linking, Platform } from 'react-native'
+import { View, StyleSheet, Modal, TouchableOpacity, Linking, Platform, ScrollView } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { AppText } from '@/components/app-text'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
 import { SolanaColors } from '@/constants/colors'
 import { useConnection } from '@/components/solana/solana-provider'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Toast } from '@/components/ui/toast'
 
 export enum TransactionStep {
   PREPARING = 'preparing',
@@ -50,21 +49,14 @@ export function TransactionProgressModal({
   const connection = useConnection()
   const [txStatus, setTxStatus] = useState<TransactionStatus>(TransactionStatus.PENDING)
   const [confirmations, setConfirmations] = useState(0)
-  
-  // Toast state
-  const [toastVisible, setToastVisible] = useState(false)
-  const [toastMessage, setToastMessage] = useState('')
 
   // Copy to clipboard helper
   const copyToClipboard = async (text: string, label: string) => {
     try {
       Clipboard.setString(text)
-      setToastMessage(`${label} copied`)
-      setToastVisible(true)
+      // System will show native clipboard toast
     } catch (error) {
       console.error('Copy failed:', error)
-      setToastMessage(`Failed to copy ${label}`)
-      setToastVisible(true)
     }
   }
 
@@ -249,7 +241,17 @@ export function TransactionProgressModal({
       onRequestClose={canClose ? onClose : undefined}
     >
       <View style={styles.overlay}>
-        <View style={styles.modalContent}>
+        <TouchableOpacity 
+          style={styles.modalContainer}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <ScrollView 
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+          >
           <LinearGradient
             colors={[SolanaColors.brand.dark, '#1a0b2e']}
             style={StyleSheet.absoluteFillObject}
@@ -355,11 +357,10 @@ export function TransactionProgressModal({
                   <View style={styles.nextStepsContent}>
                     <AppText style={styles.nextStepsTitle}>What's Next?</AppText>
                     <AppText style={styles.nextStepsText}>
-                      {mode === 'claim' ? (
-                        `• Your reward has been transferred to your wallet{"\n"}• Check your wallet balance for the claimed tokens{"\n"}• Congratulations on completing the challenge!`
-                      ) : (
-                        `• You're now a participant in this challenge{"\n"}• Wait for the challenge to end for results{"\n"}• Winners can claim rewards after resolution`
-                      )}
+                      {mode === 'claim' 
+                        ? '• Your reward has been transferred to your wallet\n• Check your wallet balance for the claimed tokens\n• Congratulations on completing the challenge!'
+                        : "• You're now a participant in this challenge\n• Wait for the challenge to end for results\n• Winners can claim rewards after resolution"
+                      }
                     </AppText>
                   </View>
                 </View>
@@ -384,16 +385,9 @@ export function TransactionProgressModal({
               <AppText style={styles.closeButtonText}>Close</AppText>
             </TouchableOpacity>
           )}
-        </View>
+          </ScrollView>
+        </TouchableOpacity>
       </View>
-      
-      {/* Toast */}
-      <Toast 
-        visible={toastVisible} 
-        message={toastMessage} 
-        onHide={() => setToastVisible(false)}
-        duration={2000}
-      />
     </Modal>
   )
 }
@@ -402,18 +396,23 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    justifyContent: 'flex-end',
   },
-  modalContent: {
-    borderRadius: 20,
-    padding: 32,
-    alignItems: 'center',
-    minWidth: 300,
+  modalContainer: {
+    backgroundColor: SolanaColors.brand.dark,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
+    maxHeight: '85%',
     overflow: 'hidden',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 32,
+    alignItems: 'center',
   },
   iconContainer: {
     width: 96,
