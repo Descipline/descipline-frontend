@@ -2,7 +2,7 @@ import { PublicKey } from '@solana/web3.js'
 import { DESCIPLINE_CONFIG, getDesciplinePublicKeys } from './constants'
 
 /**
- * 从 Receipt PDA 中提取参与者的钱包地址
+ * Extract participant wallet address from Receipt PDA
  * Receipt PDA = ['receipt', challenge_pda, challenger_pubkey]
  */
 export function extractChallengerFromReceiptPda(
@@ -10,17 +10,17 @@ export function extractChallengerFromReceiptPda(
   challengePda: PublicKey
 ): PublicKey | null {
   try {
-    // 获取所有可能的公钥（这需要暴力搜索，但对于少量参与者来说是可行的）
-    // 更好的方法是使用 Solana 的程序日志或事件
+    // Get all possible public keys (this requires brute force search, but feasible for small participants)
+    // Better approach would be to use Solana program logs or events
     
-    // 由于我们无法直接从 PDA 逆向工程出原始种子，
-    // 我们需要使用不同的方法
+    // Since we cannot reverse engineer original seeds from PDA,
+    // we need to use a different approach
     
-    // 实际上，我们可以通过查看程序日志来获取这些信息
-    // 但这里我们使用一个更直接的方法：
-    // 检查 Receipt PDA 是否可能由特定的挑战者创建
+    // Actually, we can get this info by examining program logs
+    // but here we use a more direct method:
+    // Check if Receipt PDA could be created by specific challenger
     
-    return null // 这个方法需要额外的逻辑
+    return null // This method needs additional logic
   } catch (error) {
     console.error('Error extracting challenger from receipt PDA:', error)
     return null
@@ -28,7 +28,7 @@ export function extractChallengerFromReceiptPda(
 }
 
 /**
- * 验证给定的挑战者地址是否会产生指定的 Receipt PDA
+ * Verify if given challenger address would produce the specified Receipt PDA
  */
 export function verifyReceiptPdaForChallenger(
   challengePda: PublicKey,
@@ -53,7 +53,7 @@ export function verifyReceiptPdaForChallenger(
 }
 
 /**
- * 通过程序日志获取参与者信息（使用 Solana RPC）
+ * Get participant info through program logs (using Solana RPC)
  */
 export async function getParticipantsFromLogs(
   connection: any,
@@ -67,7 +67,7 @@ export async function getParticipantsFromLogs(
   try {
     console.log('🔍 Fetching signatures for challenge:', challengePda.toString())
     
-    // 获取与挑战相关的交易签名
+    // Get transaction signatures related to challenge
     const signatures = await connection.getSignaturesForAddress(
       challengePda,
       { limit: 100 }
@@ -77,12 +77,12 @@ export async function getParticipantsFromLogs(
     
     const participants = []
     
-    // 分析每个交易以找到 stake 操作
+    // Analyze each transaction to find stake operations
     for (const signatureInfo of signatures) {
-      if (signatureInfo.err) continue // 跳过失败的交易
+      if (signatureInfo.err) continue // Skip failed transactions
       
       try {
-        // 获取交易详情
+        // Get transaction details
         const transaction = await connection.getParsedTransaction(
           signatureInfo.signature,
           { commitment: 'confirmed' }
@@ -90,20 +90,20 @@ export async function getParticipantsFromLogs(
         
         if (!transaction) continue
         
-        // 查找我们程序的指令
+        // Find instructions for our program
         const ourInstructions = transaction.transaction.message.instructions.filter(
           (ix: any) => ix.programId?.toString() === programId.toString()
         )
         
         for (const instruction of ourInstructions) {
-          // 通过指令数据的discriminator来识别stake指令
-          // stake指令的discriminator应该与createChallenge不同
+          // Identify stake instruction by discriminator in instruction data
+          // stake instruction discriminator should differ from createChallenge
           if (instruction.data && instruction.accounts && instruction.accounts.length > 0) {
-            // 解析指令数据以确定指令类型
+            // Parse instruction data to determine instruction type
             const instructionData = Buffer.from(instruction.data, 'base64')
             
-            // 检查discriminator (前8字节)
-            // 我们需要识别这是否是stake指令而不是createChallenge指令
+            // Check discriminator (first 8 bytes)
+            // We need to identify if this is stake instruction not createChallenge instruction
             const discriminator = Array.from(instructionData.slice(0, 8))
             
             // Discriminators from IDL
@@ -125,7 +125,7 @@ export async function getParticipantsFromLogs(
               blockTime: new Date((signatureInfo.blockTime || 0) * 1000).toLocaleString()
             })
             
-            // 只处理stake指令（排除createChallenge和其他指令）
+            // Only process stake instructions (exclude createChallenge and other instructions)
             if (isStake) {
               const challengerAddress = instruction.accounts[0]?.toString()
               
@@ -177,8 +177,8 @@ export async function getParticipantsFromLogs(
 }
 
 /**
- * 使用程序账户查询获取特定挑战的参与者
- * 通过验证 PDA 推导来确保receipts属于该挑战
+ * Get participants for specific challenge using program account queries
+ * Ensure receipts belong to this challenge by verifying PDA derivation
  */
 export async function getParticipantsFromReceiptAccounts(
   program: any,
@@ -191,26 +191,26 @@ export async function getParticipantsFromReceiptAccounts(
   try {
     console.log('🔍 Getting participants via receipt accounts...')
     
-    // 获取所有 receipt 账户
+    // Get all receipt accounts
     const allReceipts = await program.account.receipt.all()
     console.log(`📋 Found ${allReceipts.length} total receipt accounts`)
     
     const validParticipants = []
     
-    // 对于每个 receipt，尝试通过PDA推导验证它是否属于这个挑战
+    // For each receipt, try to verify if it belongs to this challenge through PDA derivation
     for (const receipt of allReceipts) {
       try {
-        // Receipt PDA 结构: ["receipt", challenge_pda, challenger_pda]  
-        // 我们需要反向工程找到可能的challenger_pda
+        // Receipt PDA structure: ["receipt", challenge_pda, challenger_pda]  
+        // We need to reverse engineer to find possible challenger_pda
         
-        // 由于我们无法直接从PDA推导出原始种子，我们使用暴力搜索
-        // 但这不现实。让我们使用链上数据结构
+        // Since we cannot directly derive original seeds from PDA, we use brute force search
+        // but this is unrealistic. Let's use on-chain data structures
         
-        // Receipt账户只包含bump，没有challenge或challenger信息
-        // 所以我们需要依靠PDA推导验证
+        // Receipt account only contains bump, no challenge or challenger info
+        // so we need to rely on PDA derivation verification
         
-        // 暂时跳过复杂的PDA验证，返回空数组
-        // 这样就不会错误计算参与者数量
+        // Skip complex PDA verification for now, return empty array
+        // This way we won't incorrectly calculate participant count
         console.log('🔍 Receipt account:', {
           pubkey: receipt.publicKey.toString(),
           bump: receipt.account.bump
@@ -231,8 +231,8 @@ export async function getParticipantsFromReceiptAccounts(
 }
 
 /**
- * 更简单的方法：使用 Connection.getProgramAccounts 的过滤器
- * 这应该更高效
+ * Simpler approach: use Connection.getProgramAccounts filters
+ * This should be more efficient
  */
 export async function getReceiptsForChallenge(
   connection: any,
@@ -245,24 +245,24 @@ export async function getReceiptsForChallenge(
   try {
     console.log('🔍 Getting receipts for challenge using getProgramAccounts...')
     
-    // 使用 memcmp 过滤器只获取特定挑战的 receipts
-    // Receipt PDA 种子: ["receipt", challenge_pda, challenger_pda]
+    // Use memcmp filter to get receipts for specific challenge only
+    // Receipt PDA seeds: ["receipt", challenge_pda, challenger_pda]
     const receipts = await connection.getProgramAccounts(
       programId,
       {
         filters: [
           {
             memcmp: {
-              offset: 0, // 从开头开始
-              bytes: 'receipt', // 但这不会直接工作，因为 PDA 种子不存储在账户数据中
+              offset: 0, // Start from beginning
+              bytes: 'receipt', // But this won't work directly since PDA seeds are not stored in account data
             }
           }
         ]
       }
     )
     
-    // 实际上 getProgramAccounts 的 memcmp 是针对账户数据的，不是 PDA 种子
-    // 所以我们需要获取所有 receipt 账户然后手动过滤
+    // Actually getProgramAccounts memcmp is for account data, not PDA seeds
+    // so we need to get all receipt accounts then manually filter
     console.log('Found potential receipts:', receipts.length)
     
     return receipts.map(receipt => ({

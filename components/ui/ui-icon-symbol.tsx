@@ -80,6 +80,9 @@ const MAPPING = {
   'rocket.fill': 'rocket-launch',
   'shield.checkered': 'security',
   'checkmark.seal.fill': 'verified',
+  // Token icons
+  'sun.max.fill': 'wb-sunny',
+  'circle.fill': 'radio-button-checked',
 } as UiIconMapping
 
 /**

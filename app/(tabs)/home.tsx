@@ -9,7 +9,9 @@ import { TouchableOpacity } from 'react-native'
 import { useGetChallengesWithGill } from '@/components/descipline/use-gill-challenge-hooks'
 import { ChallengeCard } from '@/components/descipline/challenge-card'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
-import { TargetIcon, LockIcon, CheckmarkIcon, TrophyIcon } from '@/components/ui/step-icons'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
+import Ionicons from '@expo/vector-icons/Ionicons'
 
 const { width, height } = Dimensions.get('window')
 
@@ -134,10 +136,27 @@ interface StepCardProps {
   step: number
   title: string
   description: string
-  IconComponent: React.ComponentType<{ size?: number }>
+  iconName: string
+  iconLibrary: 'MaterialIcons' | 'FontAwesome5' | 'Ionicons'
+  iconColor: string
 }
 
-function StepCard({ step, title, description, IconComponent }: StepCardProps) {
+function StepCard({ step, title, description, iconName, iconLibrary, iconColor }: StepCardProps) {
+  const renderIcon = () => {
+    const iconProps = { name: iconName, size: 28, color: iconColor }
+    
+    switch (iconLibrary) {
+      case 'MaterialIcons':
+        return <MaterialIcons {...iconProps} />
+      case 'FontAwesome5':
+        return <FontAwesome5 {...iconProps} />
+      case 'Ionicons':
+        return <Ionicons {...iconProps} />
+      default:
+        return <MaterialIcons {...iconProps} />
+    }
+  }
+
   return (
     <View style={styles.stepCard}>
       <View style={styles.stepNumber}>
@@ -147,7 +166,7 @@ function StepCard({ step, title, description, IconComponent }: StepCardProps) {
         <View style={styles.stepHeader}>
           <AppText style={styles.stepTitle}>{title}</AppText>
           <View style={styles.stepIconContainer}>
-            <IconComponent size={32} />
+            {renderIcon()}
           </View>
         </View>
         <AppText style={styles.stepDescription}>{description}</AppText>
@@ -320,25 +339,33 @@ export default function Home() {
               step={1}
               title="Set Your Challenge"
               description="Define your goal and set the stakes. The bigger the commitment, the stronger the motivation."
-              IconComponent={TargetIcon}
+              iconName="rocket-launch"
+              iconLibrary="MaterialIcons"
+              iconColor="#f59e0b"
             />
             <StepCard
               step={2}
               title="Lock Your Stake"
               description="Put your money where your mouth is. Stake USDC or SOL to join the challenge."
-              IconComponent={LockIcon}
+              iconName="diamond"
+              iconLibrary="FontAwesome5"
+              iconColor="#06b6d4"
             />
             <StepCard
               step={3}
               title="Prove Your Progress"
               description="Submit verifiable proof of completion through our attestation system."
-              IconComponent={CheckmarkIcon}
+              iconName="shield-checkmark"
+              iconLibrary="Ionicons"
+              iconColor="#10b981"
             />
             <StepCard
               step={4}
               title="Claim Your Rewards"
               description="Winners get their stake back plus a share of what the quitters lost."
-              IconComponent={TrophyIcon}
+              iconName="celebration"
+              iconLibrary="MaterialIcons"
+              iconColor="#f59e0b"
             />
           </View>
         </View>

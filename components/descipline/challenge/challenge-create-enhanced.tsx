@@ -5,18 +5,22 @@ import { useRouter } from 'expo-router'
 import { AppView } from '@/components/app-view'
 import { AppText } from '@/components/app-text'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import FontAwesome from '@expo/vector-icons/FontAwesome'
+import { TokenIcon } from '@/components/ui/token-icon'
 import { CrossPlatformDateTimePicker } from '@/components/ui/cross-platform-datetime-picker'
 import { useCreateChallenge } from './use-challenge-hooks'
 import { TokenAllowed, CreateChallengeFormData } from '@/utils/descipline/types'
 import { SolanaColors } from '@/constants/colors'
+
 import { ChallengeSuccessEnhanced } from './challenge-success-enhanced'
 
-// 创建流程步骤枚举
+// Create process step enumeration
 enum CreateStep {
-  FORM = 'form',           // 表单填写
-  PREVIEW = 'preview',     // 预览确认
-  CREATING_CHALLENGE = 'creating_challenge', // 正在创建挑战
-  SUCCESS = 'success'      // 成功
+  FORM = 'form',           // Form filling
+  PREVIEW = 'preview',     // Preview confirmation
+  CREATING_CHALLENGE = 'creating_challenge', // Creating challenge
+  SUCCESS = 'success'      // Success
 }
 
 interface StepIndicatorProps {
@@ -481,8 +485,8 @@ export function ChallengeCreateEnhanced() {
               ]}
               activeOpacity={0.8}
             >
-              <UiIconSymbol 
-                name="dollarsign.circle.fill" 
+              <TokenIcon 
+                token={TokenAllowed.USDC}
                 size={20} 
                 color={formData.tokenType === TokenAllowed.USDC ? '#ffffff' : 'rgba(255, 255, 255, 0.6)'} 
               />
@@ -502,8 +506,8 @@ export function ChallengeCreateEnhanced() {
               ]}
               activeOpacity={0.8}
             >
-              <UiIconSymbol 
-                name="sun.max.fill" 
+              <TokenIcon 
+                token={TokenAllowed.WSOL}
                 size={20} 
                 color={formData.tokenType === TokenAllowed.WSOL ? '#ffffff' : 'rgba(255, 255, 255, 0.6)'} 
               />

@@ -38,7 +38,7 @@ export default function SignInScreen() {
         {/* Header Section */}
         <View style={styles.header}>
           <LinearGradient
-            colors={[SolanaColors.brand.purple, '#dc1fff']}
+            colors={['#7c3aed', SolanaColors.brand.purple]}
             style={styles.logoContainer}
           >
             <UiIconSymbol name="wallet.pass.fill" size={48} color="#ffffff" />
@@ -59,7 +59,7 @@ export default function SignInScreen() {
             activeOpacity={0.8}
           >
             <LinearGradient
-              colors={[SolanaColors.brand.purple, '#dc1fff']}
+              colors={['#7c3aed', SolanaColors.brand.purple]}
               style={styles.connectButtonGradient}
             />
             {isLoading ? (

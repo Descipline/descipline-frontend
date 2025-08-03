@@ -8,7 +8,7 @@ import { Challenge, ChallengeWithDetails } from '@/utils/descipline/types'
 import { useWalletUi } from '@/components/solana/use-wallet-ui'
 import { useConnection } from '@/components/solana/solana-provider'
 
-// 获取所有挑战
+// Get all challenges
 export function useGetChallenges() {
   const { program } = useDescipline()
   const connection = useConnection()
@@ -31,13 +31,13 @@ export function useGetChallenges() {
           return []
         }
 
-        // 基础挑战数据转换
+        // Basic challenge data transformation
         const challengesWithBasicData = challenges.map((challenge: any) => {
           return {
             ...challenge.account,
             publicKey: challenge.publicKey,
-            participantCount: 0, // TODO: 实现真实参与者计数
-            participants: [], // TODO: 实现参与者列表
+            participantCount: 0, // TODO: Implement real participant count
+            participants: [], // TODO: Implement participant list
           } as ChallengeWithDetails
         })
 
@@ -55,7 +55,7 @@ export function useGetChallenges() {
   })
 }
 
-// 获取单个挑战详情
+// Get single challenge details
 export function useGetChallenge(challengeId: string | undefined) {
   const { program } = useDescipline()
   const connection = useConnection()
@@ -76,8 +76,8 @@ export function useGetChallenge(challengeId: string | undefined) {
         return {
           ...challenge,
           publicKey: challengePublicKey,
-          participantCount: 0, // TODO: 实现真实参与者计数
-          participants: [], // TODO: 实现参与者列表
+          participantCount: 0, // TODO: Implement real participant count
+          participants: [], // TODO: Implement participant list
         } as ChallengeWithDetails
 
       } catch (error) {
@@ -90,7 +90,7 @@ export function useGetChallenge(challengeId: string | undefined) {
   })
 }
 
-// 测试基础连接
+// Test basic connection
 export function useTestConnection() {
   const { program } = useDescipline()
   const { account } = useWalletUi()

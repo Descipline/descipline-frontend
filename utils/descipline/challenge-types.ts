@@ -1,8 +1,8 @@
 export enum ChallengeStatus {
-  ACTIVE = "active",      // 可以参与
-  ENDED = "ended",        // 已结束，等待解决
-  RESOLVED = "resolved",  // 已解决，可以领奖
-  CLAIMED = "claimed"     // 已领完奖
+  ACTIVE = "active",      // Can participate
+  ENDED = "ended",        // Ended, waiting for resolution
+  RESOLVED = "resolved",  // Resolved, can claim rewards
+  CLAIMED = "claimed"     // All rewards claimed
 }
 
 export interface UserParticipation {

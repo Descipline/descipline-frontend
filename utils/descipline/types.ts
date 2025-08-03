@@ -1,18 +1,18 @@
 import { PublicKey } from '@solana/web3.js'
 import { BN } from '@coral-xyz/anchor'
 
-// Token types - 枚举用于表单
+// Token types - enum for forms
 export enum TokenAllowed {
   USDC = 'usdc',
   WSOL = 'wsol',
 }
 
-// 链上数据的代币类型格式
+// On-chain token type format
 export type OnChainTokenAllowed = 
   | { usdc: {} }
   | { wsol: {} }
 
-// Challenge state - 链上数据格式
+// Challenge state - on-chain data format
 export interface Challenge {
   name: string
   initiator: PublicKey
@@ -75,7 +75,7 @@ export interface TransactionResult {
   error?: Error
 }
 
-// 辅助函数：检查链上代币类型
+// Helper functions: check on-chain token types
 export function isUSDCToken(tokenAllowed: OnChainTokenAllowed): boolean {
   return 'usdc' in tokenAllowed
 }
