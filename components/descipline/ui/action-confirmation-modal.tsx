@@ -39,19 +39,24 @@ export function ActionConfirmationModal({
   // Toast state
   const [toastVisible, setToastVisible] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
+  
+  // Debug only when visible
+  if (visible && mode === 'stake') {
+    console.log('🎯 Stake Modal Data:', {
+      challengeName: challenge?.name,
+      challengeStakeAmount: challenge?.stakeAmount,
+      challengeTokenAllowed: challenge?.tokenAllowed,
+      realParticipantCount,
+      mode
+    })
+  }
+  
   const tokenSymbol = challenge.tokenAllowed === "USDC" ? "USDC" : "SOL"
   const decimals = challenge.tokenAllowed === "USDC" ? 6 : 9
   const stakeAmount = Number(challenge.stakeAmount) / Math.pow(10, decimals)
   const fee = challenge.fee / 100 // Convert basis points to percentage
   const isSOLChallenge = challenge.tokenAllowed === "WSOL" // Check if this is a SOL challenge
   
-  // Debug reward amount
-  console.log('🎯 ActionConfirmationModal debug:', {
-    mode,
-    rewardAmount,
-    decimals,
-    formattedReward: rewardAmount ? (rewardAmount / Math.pow(10, decimals)).toFixed(2) : '0.00'
-  })
 
   const copyToClipboard = async (text: string, label: string) => {
     try {

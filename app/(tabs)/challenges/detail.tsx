@@ -314,30 +314,34 @@ export default function ChallengeDetailScreen() {
       </ScrollView>
 
       {/* Stake Confirmation Modal */}
-      <ActionConfirmationModal
-        visible={showStakeModal}
-        onClose={() => setShowStakeModal(false)}
-        onConfirm={handleStakeConfirm}
-        challenge={{...challenge, publicKey: id}} // Add publicKey from route params
-        creatorAddress={challenge.initiator}
-        loading={isStaking}
-        realParticipantCount={challengeData.participants.length}
-        mode="stake"
-      />
+      {challenge && (
+        <ActionConfirmationModal
+          visible={showStakeModal}
+          onClose={() => setShowStakeModal(false)}
+          onConfirm={handleStakeConfirm}
+          challenge={{...challenge, publicKey: id}}
+          creatorAddress={challenge.initiator}
+          loading={isStaking}
+          realParticipantCount={challengeData?.participants.length}
+          mode="stake"
+        />
+      )}
 
       {/* Claim Confirmation Modal */}
-      <ActionConfirmationModal
-        visible={showClaimModal}
-        onClose={() => setShowClaimModal(false)}
-        onConfirm={handleClaimConfirm}
-        challenge={{...challenge, publicKey: id}} // Add publicKey from route params
-        creatorAddress={challenge.initiator}
-        loading={isClaiming}
-        realParticipantCount={challengeData.participants.length}
-        mode="claim"
-        rewardAmount={Number(challenge.stakeAmount)} // Mock reward amount
-        isWinner={true} // Mock winner status
-      />
+      {challenge && (
+        <ActionConfirmationModal
+          visible={showClaimModal}
+          onClose={() => setShowClaimModal(false)}
+          onConfirm={handleClaimConfirm}
+          challenge={{...challenge, publicKey: id}}
+          creatorAddress={challenge.initiator}
+          loading={isClaiming}
+          realParticipantCount={challengeData?.participants.length}
+          mode="claim"
+          rewardAmount={Number(challenge.stakeAmount)}
+          isWinner={true}
+        />
+      )}
     </AppView>
   )
 }
