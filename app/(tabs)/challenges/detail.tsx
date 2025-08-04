@@ -206,12 +206,20 @@ export default function ChallengeDetailScreen() {
     setTransactionStep(step)
     
     if (data?.signature) {
+      console.log('🎯 Setting transaction signature:', data.signature)
       setTransactionSignature(data.signature)
     }
     
     if (data?.error) {
       setTransactionError(data.error)
     }
+    
+    // Debug: Log current state after update
+    console.log('🎯 Current transaction state:', {
+      step,
+      signature: data?.signature || transactionSignature,
+      error: data?.error || transactionError
+    })
   }
 
 
@@ -456,6 +464,12 @@ export default function ChallengeDetailScreen() {
       </ScrollView>
 
       {/* Transaction Progress Modal */}
+      {console.log('🎯 Rendering TransactionProgressModal with:', {
+        visible: showTransactionModal,
+        step: transactionStep,
+        signature: transactionSignature,
+        showSimpleFlow: false
+      })}
       <TransactionProgressModal
         visible={showTransactionModal}
         step={transactionStep}
@@ -468,6 +482,7 @@ export default function ChallengeDetailScreen() {
         rewardAmount={currentRewardAmount}
         tokenSymbol={challengeData?.tokenSymbol}
         decimals={challengeData?.decimals}
+        showSimpleFlow={false} // Ensure full flow for stake/claim
       />
 
       {/* Stake Confirmation Modal */}

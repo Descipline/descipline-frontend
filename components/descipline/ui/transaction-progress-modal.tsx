@@ -33,10 +33,11 @@ interface TransactionProgressModalProps {
   onClose: () => void
   onRetry?: () => void
   onViewTransaction?: () => void
-  mode?: 'stake' | 'claim'
+  mode?: 'stake' | 'claim' | 'create'
   rewardAmount?: number
   tokenSymbol?: string
   decimals?: number
+  showSimpleFlow?: boolean // If true, close after CONFIRMING step
 }
 
 export function TransactionProgressModal({
@@ -50,7 +51,8 @@ export function TransactionProgressModal({
   mode = 'stake',
   rewardAmount,
   tokenSymbol = 'USDC',
-  decimals = 6
+  decimals = 6,
+  showSimpleFlow = false
 }: TransactionProgressModalProps) {
   const connection = useConnection()
   const [txStatus, setTxStatus] = useState<TransactionStatus>(TransactionStatus.PENDING)
@@ -81,9 +83,21 @@ export function TransactionProgressModal({
     Linking.openURL(url)
   }
 
-  // Poll transaction status when signature is available and step is SUCCESS
+  // Auto-close for simple flow (create challenge)
   useEffect(() => {
-    if (!connection || !signature || step !== TransactionStep.SUCCESS) return
+    if (showSimpleFlow && step === TransactionStep.SUCCESS && signature) {
+      // Auto close after 2 seconds for simple flow
+      const timeout = setTimeout(() => {
+        onClose()
+      }, 2000)
+      
+      return () => clearTimeout(timeout)
+    }
+  }, [showSimpleFlow, step, signature, onClose])
+
+  // Poll transaction status when signature is available and step is SUCCESS (only for full flow)
+  useEffect(() => {
+    if (!connection || !signature || step !== TransactionStep.SUCCESS || showSimpleFlow) return
 
     let currentPollingAttempts = 0
     const maxPollingAttempts = 30
@@ -277,8 +291,16 @@ export function TransactionProgressModal({
           <AppText style={styles.message}>{stepInfo.message}</AppText>
 
           {/* Transaction Status and Details */}
-          {step === TransactionStep.SUCCESS && signature && (
+          {step === TransactionStep.SUCCESS && signature && !showSimpleFlow && (
             <>
+              {/* Debug logging */}
+              {console.log('🔍 TransactionModal DEBUG:', { 
+                step, 
+                signature, 
+                showSimpleFlow, 
+                txStatus,
+                stepInfo: stepInfo.title 
+              })}
               {/* Status Indicator */}
               {txStatus !== TransactionStatus.FAILED && (
                 <View style={styles.statusCard}>
