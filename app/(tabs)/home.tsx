@@ -263,7 +263,10 @@ export default function Home() {
               An open challenge arena where discipline is rewarded.
             </AppText>
             <AppText style={styles.heroDescription}>
-              <br/><br/>
+               
+            </AppText>
+            <AppText style={styles.heroDescription}>
+               
             </AppText>
 
             <Animated.View
