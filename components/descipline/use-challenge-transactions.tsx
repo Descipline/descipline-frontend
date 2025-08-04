@@ -279,20 +279,20 @@ export function useClaimReward() {
           proof: merkleProof
         })
 
-        // Build transaction with compute budget for claim
+        // Build simple transaction like test.ts - keep it simple!
         const transaction = new Transaction()
         transaction.recentBlockhash = blockhash
         transaction.feePayer = account.publicKey
         
-        // Add compute budget instruction for claim (merkle proof verification needs more compute)
+        // Add moderate compute budget (test.ts uses 200,000)
         const computeBudgetIx = ComputeBudgetProgram.setComputeUnitLimit({
-          units: 400_000, // Higher limit for merkle proof verification
+          units: 300_000, // Moderate increase from test.ts
         })
         
         transaction.add(computeBudgetIx)
         transaction.add(claimIx)
 
-        console.log('Claim transaction built with', transaction.instructions.length, 'instructions')
+        console.log('Claim transaction built with', transaction.instructions.length, 'instructions (simple approach)')
 
         onProgressUpdate(TransactionStep.SIGNING)
         onProgressUpdate(TransactionStep.SENDING)
@@ -302,7 +302,7 @@ export function useClaimReward() {
 
         onProgressUpdate(TransactionStep.CONFIRMING, { signature })
         
-        // Wait for confirmation with timeout handling
+        // Standard confirmation timeout like other transactions
         const confirmationResult = await Promise.race([
           connection.confirmTransaction({
             signature,

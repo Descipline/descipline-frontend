@@ -177,35 +177,34 @@ export async function buildClaimInstruction(params: {
   let data = discriminator
   
   if (params.merkleProof && params.merkleProof.length > 0) {
-    // Convert merkle proof from hex strings to Buffer and concatenate
+    // Convert merkle proof from hex strings to Buffer and concatenate (like test.ts)
     const proofBuffers = params.merkleProof.map(hex => Buffer.from(hex, 'hex'))
     const proofBytes = Buffer.concat(proofBuffers)
     
     // Winner index is required for the claim instruction
     const winnerIndex = params.winnerIndex ?? 0
     
-    // Following the contract format: .claim(Array.from(proofBytes), index)
-    // This means the instruction data format is: discriminator + proof_bytes_as_array + index
+    // Following test.ts format: proof: Buffer.from(winner1_proof), index: winner1_index
+    // The descipline-lib likely handles serialization internally
+    // Let's try the simplest approach: discriminator + raw proof bytes + index
     
-    // Convert proof bytes to array format (as bytes)
-    const proofArray = Array.from(proofBytes)
-    
-    // Encode as Vec<u8> (length + data) + u32 index
+    // Just serialize as the contract expects: Vec<u8> proof + u32 index
+    // Vec<u8> in Borsh: length (4 bytes LE) + data
     const proofLengthBuffer = Buffer.alloc(4)
-    proofLengthBuffer.writeUInt32LE(proofArray.length, 0)
+    proofLengthBuffer.writeUInt32LE(proofBytes.length, 0)
     
-    const proofDataBuffer = Buffer.from(proofArray)
-    
+    // u32 index in Borsh: 4 bytes LE
     const indexBuffer = Buffer.alloc(4) 
     indexBuffer.writeUInt32LE(winnerIndex, 0)
     
-    // Combine: discriminator + proof_length + proof_data + index
-    data = Buffer.concat([discriminator, proofLengthBuffer, proofDataBuffer, indexBuffer])
+    // Combine: discriminator + Vec<u8> + u32 (standard Borsh serialization)
+    data = Buffer.concat([discriminator, proofLengthBuffer, proofBytes, indexBuffer])
     
-    console.log('🌳 Built claim instruction with merkle proof:', {
+    console.log('🌳 Built claim instruction (test.ts style):', {
       discriminator: discriminator.toString('hex'),
-      proofLength: proofArray.length,
-      proofHex: proofDataBuffer.toString('hex'),
+      proofElements: params.merkleProof.length,
+      proofBytesLength: proofBytes.length,
+      proofHex: proofBytes.toString('hex'),
       winnerIndex: winnerIndex,
       totalDataLength: data.length
     })
