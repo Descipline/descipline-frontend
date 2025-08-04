@@ -213,28 +213,31 @@ export async function buildClaimInstruction(params: {
     console.log('⚠️ Building claim instruction without merkle proof - this will likely fail')
   }
   
-  // Build accounts - following the exact order from the contract script
+  // Build accounts - following the exact order from the IDL
   const keys: AccountMeta[] = [
     { pubkey: params.claimer, isSigner: true, isWritable: true },        // winner
     { pubkey: claimerAta, isSigner: false, isWritable: true },           // winnerAta  
-    { pubkey: params.stakeMint, isSigner: false, isWritable: false },    // stakeMint
-    { pubkey: params.challenge, isSigner: false, isWritable: true },     // challenge
-    { pubkey: resolutionPda, isSigner: false, isWritable: true },        // resolution (was missing!)
-    { pubkey: receiptPda, isSigner: false, isWritable: true },           // receipt
     { pubkey: vault, isSigner: false, isWritable: true },                // vault
+    { pubkey: params.challenge, isSigner: false, isWritable: false },    // challenge (readonly!)
+    { pubkey: resolutionPda, isSigner: false, isWritable: true },        // resolution
+    { pubkey: receiptPda, isSigner: false, isWritable: true },           // receipt
+    { pubkey: params.stakeMint, isSigner: false, isWritable: false },    // stakeMint
     { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },    // tokenProgram
     { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // associatedTokenProgram
     { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },     // systemProgram
   ]
   
-  console.log('🔧 Built claim instruction accounts:', {
-    winner: params.claimer.toString(),
-    winnerAta: claimerAta.toString(), 
-    stakeMint: params.stakeMint.toString(),
-    challenge: params.challenge.toString(),
-    resolution: resolutionPda.toString(),
-    receipt: receiptPda.toString(),
-    vault: vault.toString(),
+  console.log('🔧 Built claim instruction accounts (IDL order):', {
+    '0_winner': params.claimer.toString(),
+    '1_winnerAta': claimerAta.toString(),
+    '2_vault': vault.toString(),
+    '3_challenge': params.challenge.toString(),
+    '4_resolution': resolutionPda.toString(),
+    '5_receipt': receiptPda.toString(),
+    '6_stakeMint': params.stakeMint.toString(),
+    '7_tokenProgram': TOKEN_PROGRAM_ID.toString(),
+    '8_associatedTokenProgram': ASSOCIATED_TOKEN_PROGRAM_ID.toString(),
+    '9_systemProgram': SystemProgram.programId.toString(),
     accountCount: keys.length
   })
   
