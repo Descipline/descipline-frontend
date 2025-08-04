@@ -4,7 +4,7 @@ import { PublicKey } from '@solana/web3.js'
 import { useConnection } from '@/components/solana/solana-provider'
 import { desciplineKeys } from '@/utils/descipline/constants'
 
-// Resolution 数据结构
+// Resolution data structure
 export interface ResolutionData {
   challengePda: string
   challengeName: string
@@ -24,7 +24,7 @@ export interface ResolutionData {
   resolvedBy: string
 }
 
-// 从本地文件获取 resolution 数据
+// Get resolution data from local files
 export function useGetResolution(challengeId: string) {
   return useQuery({
     queryKey: [...desciplineKeys.resolution(challengeId)],
@@ -34,40 +34,39 @@ export function useGetResolution(challengeId: string) {
       console.log('🔍 Loading resolution data for challenge:', challengeId)
       
       try {
-        // 尝试根据 challengeId 前8位查找对应的 resolution 文件
-        const shortId = challengeId.slice(0, 8)
+        // Dynamically construct resolution file URL
+        const resolutionUrl = `/assets/resolutions/resolution-${challengeId}.json`
         
-        // 在 React Native 中，我们需要直接 require 静态资源
-        // 首先尝试加载已知的 resolution 文件
-        try {
-          const resolutionData = require('@/assets/resolutions/resolution-2HqUUkG6.json')
-          
-          // 检查是否匹配当前挑战
-          if (resolutionData.challengePda === challengeId || 
-              resolutionData.challengePda.startsWith(shortId)) {
-            console.log('✅ Found matching resolution data:', resolutionData.challengeName)
-            return resolutionData as ResolutionData
-          }
-        } catch (error) {
-          console.log('📄 Resolution file not found for challenge:', shortId)
+        console.log('📁 Fetching resolution file:', resolutionUrl)
+        
+        // Use fetch to get resolution file
+        const response = await fetch(resolutionUrl)
+        
+        if (!response.ok) {
+          console.log('⚠️ Resolution file not found, challenge may not be resolved yet')
+          return null
         }
         
-        // 如果没有找到本地文件，尝试从链上获取（未来可以实现）
-        console.log('⚠️ No local resolution found, challenge may not be resolved yet')
-        return null
+        const resolutionData = await response.json() as ResolutionData
+        
+        console.log('✅ Successfully loaded resolution data for challenge:', resolutionData.challengeName)
+        console.log('🏆 Winners:', resolutionData.winners.length)
+        
+        return resolutionData
         
       } catch (error) {
         console.error('❌ Error loading resolution data:', error)
+        console.log('⚠️ This is normal if the challenge has not been resolved yet')
         return null
       }
     },
     enabled: !!challengeId,
-    staleTime: 5 * 60 * 1000, // 5分钟缓存
-    cacheTime: 10 * 60 * 1000, // 10分钟缓存
+    staleTime: 5 * 60 * 1000, // 5 minutes cache
+    cacheTime: 10 * 60 * 1000, // 10 minutes cache
   })
 }
 
-// 获取用户的获奖证明
+// Get user's winner proof
 export function useGetWinnerProof(challengeId: string, userAddress?: string) {
   const { data: resolution } = useGetResolution(challengeId)
   
@@ -96,7 +95,7 @@ export function useGetWinnerProof(challengeId: string, userAddress?: string) {
   }, [resolution, userAddress])
 }
 
-// 检查用户是否可以领奖
+// Check if user can claim rewards
 export function useCanUserClaim(challengeId: string, userAddress?: string) {
   const { data: resolution, isLoading: resolutionLoading } = useGetResolution(challengeId)
   const { isWinner } = useGetWinnerProof(challengeId, userAddress)
@@ -134,10 +133,10 @@ export function useCanUserClaim(challengeId: string, userAddress?: string) {
       }
     }
     
-    // TODO: 这里可以添加更多检查
-    // 1. 检查用户是否已经领取过奖励（查询链上 receipt 状态）
-    // 2. 检查是否在领奖时间范围内
-    // 3. 检查挑战状态是否为 RESOLVED
+    // TODO: Additional checks can be added here:
+    // 1. Check if user has already claimed rewards (query on-chain receipt status)
+    // 2. Check if within claim time window
+    // 3. Check if challenge status is RESOLVED
     
     return {
       canClaim: true,
@@ -147,7 +146,7 @@ export function useCanUserClaim(challengeId: string, userAddress?: string) {
   }, [resolution, resolutionLoading, isWinner, userAddress])
 }
 
-// 获取用户的奖励金额（基于 resolution 数据计算）
+// Get user's reward amount (calculated based on resolution data)
 export function useGetUserReward(challengeId: string, userAddress?: string) {
   const { data: resolution } = useGetResolution(challengeId)
   const { isWinner } = useGetWinnerProof(challengeId, userAddress)
@@ -161,16 +160,16 @@ export function useGetUserReward(challengeId: string, userAddress?: string) {
       }
     }
     
-    // 根据 amigo 的计算逻辑：
-    // 总奖励池 = 单人质押金额 × 总参与者数量
-    // 个人奖励 = 总奖励池 ÷ 获奖者数量
-    const stakeAmount = 2000000 // 从 resolution 可以推断，或者从链上获取
+    // Calculation logic based on amigo:
+    // Total reward pool = stake amount per person × total participants
+    // Individual reward = total reward pool ÷ winner count
+    const stakeAmount = 2000000 // Can be inferred from resolution or fetched from chain
     const totalRewardPool = stakeAmount * resolution.totalParticipants
     const individualReward = totalRewardPool / resolution.winnerCount
     
     return {
       rewardAmount: individualReward,
-      tokenSymbol: 'USDC', // 可以从链上或 resolution 数据获取
+      tokenSymbol: 'USDC', // Can be fetched from chain or resolution data
       decimals: 6
     }
   }, [resolution, isWinner])

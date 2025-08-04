@@ -158,7 +158,7 @@ export default function ChallengeDetailScreen() {
       stakeAmount: Number(p.stakeAmount),
       participationTime: p.participationTime,
       isWinner: resolution?.winners.includes(p.address) || false,
-      hasClaimed: false // TODO: 可以从链上查询实际领取状态
+      hasClaimed: false // TODO: Can query actual claim status from chain
     })) || [
       // Fallback: always include initiator
       {
@@ -175,7 +175,7 @@ export default function ChallengeDetailScreen() {
       isParticipant: true,
       stakeAmount: Number(challenge.stakeAmount),
       canClaim: canUserClaim.canClaim, // Based on resolution file
-      hasClaimed: false, // TODO: 可以从链上查询实际状态
+      hasClaimed: false, // TODO: Can query actual status from chain
       isWinner: isWinner, // Based on resolution file
       participationTime: new Date()
     } : null
