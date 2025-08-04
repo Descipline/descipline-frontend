@@ -7,6 +7,7 @@ import { SolanaColors } from '@/constants/colors'
 import { useConnection } from '@/components/solana/solana-provider'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Toast } from '@/components/ui/toast'
+import { getDesciplinePublicKeys } from '@/utils/descipline/constants'
 
 export enum TransactionStep {
   PREPARING = 'preparing',
@@ -301,14 +302,43 @@ export function TransactionProgressModal({
                   <AppText style={styles.transactionLabel}>Transaction Hash</AppText>
                   <View style={styles.transactionValueRow}>
                     <AppText style={styles.transactionValue} numberOfLines={1}>
-                      {signature.slice(0, 8)}...{signature.slice(-8)}
+                      {signature ? `${signature.slice(0, 8)}...${signature.slice(-8)}` : 'Loading...'}
                     </AppText>
                     <TouchableOpacity
                       style={styles.copyButton}
-                      onPress={() => copyToClipboard(signature, 'Transaction hash')}
+                      onPress={() => copyToClipboard(signature || '', 'Transaction hash')}
+                      activeOpacity={0.8}
+                      disabled={!signature}
+                    >
+                      <UiIconSymbol 
+                        name="doc.on.doc" 
+                        size={16} 
+                        color={signature ? SolanaColors.brand.purple : 'rgba(153, 69, 255, 0.3)'} 
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                
+                {/* Program Address Row */}
+                <View style={styles.transactionRow}>
+                  <AppText style={styles.transactionLabel}>Program Address</AppText>
+                  <View style={styles.transactionValueRow}>
+                    <AppText style={styles.transactionValue} numberOfLines={1}>
+                      {(() => {
+                        const programId = getDesciplinePublicKeys().PROGRAM_ID.toString()
+                        return `${programId.slice(0, 8)}...${programId.slice(-8)}`
+                      })()}
+                    </AppText>
+                    <TouchableOpacity
+                      style={styles.copyButton}
+                      onPress={() => copyToClipboard(getDesciplinePublicKeys().PROGRAM_ID.toString(), 'Program address')}
                       activeOpacity={0.8}
                     >
-                      <UiIconSymbol name="doc.on.doc" size={16} color={SolanaColors.brand.purple} />
+                      <UiIconSymbol 
+                        name="doc.on.doc" 
+                        size={16} 
+                        color={SolanaColors.brand.purple} 
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -338,41 +368,43 @@ export function TransactionProgressModal({
             </TouchableOpacity>
           )}
 
-          {/* Success Actions - Following Create Success Design */}
-          {step === TransactionStep.SUCCESS && signature && txStatus === TransactionStatus.FINALIZED && (
+          {/* Success Actions - Unified Style for All SUCCESS States */}
+          {step === TransactionStep.SUCCESS && signature && (
             <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.primaryButton}
-                onPress={openExplorer}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={[SolanaColors.brand.purple, '#dc1fff']}
-                  style={styles.primaryButtonGradient}
-                />
-                <UiIconSymbol name="arrow.up.right.square" size={20} color="#ffffff" />
-                <AppText style={styles.primaryButtonText}>View on Explorer</AppText>
-              </TouchableOpacity>
-
-              <View style={styles.secondaryButtons}>
+              {/* View on Explorer - Only show when finalized */}
+              {txStatus === TransactionStatus.FINALIZED && (
                 <TouchableOpacity
-                  style={styles.secondaryButton}
-                  onPress={onClose}
+                  style={styles.primaryButton}
+                  onPress={openExplorer}
                   activeOpacity={0.8}
                 >
-                  <UiIconSymbol name="xmark" size={16} color={SolanaColors.brand.purple} />
-                  <AppText style={styles.secondaryButtonText}>Close</AppText>
+                  <LinearGradient
+                    colors={[SolanaColors.brand.purple, '#dc1fff']}
+                    style={styles.primaryButtonGradient}
+                  />
+                  <UiIconSymbol name="arrow.up.right.square" size={20} color="#ffffff" />
+                  <AppText style={styles.primaryButtonText}>View on Explorer</AppText>
                 </TouchableOpacity>
-              </View>
+              )}
+
+              {/* Close Button - Always show with same style */}
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={onClose}
+                activeOpacity={0.8}
+              >
+                <UiIconSymbol name="xmark" size={16} color={SolanaColors.brand.purple} />
+                <AppText style={styles.secondaryButtonText}>
+                  {txStatus === TransactionStatus.FINALIZED ? 'Close' : 'Close'}
+                </AppText>
+              </TouchableOpacity>
             </View>
           )}
 
-          {/* Simple Close for non-finalized states */}
-          {canClose && !(step === TransactionStep.SUCCESS && signature && txStatus === TransactionStatus.FINALIZED) && (
+          {/* Simple Close for non-SUCCESS states */}
+          {canClose && step !== TransactionStep.SUCCESS && (
             <TouchableOpacity style={styles.simpleCloseButton} onPress={onClose}>
-              <AppText style={styles.simpleCloseButtonText}>
-                {step === TransactionStep.SUCCESS ? 'Close' : 'Close'}
-              </AppText>
+              <AppText style={styles.simpleCloseButtonText}>Close</AppText>
             </TouchableOpacity>
           )}
         </View>
