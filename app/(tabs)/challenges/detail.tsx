@@ -205,6 +205,44 @@ export default function ChallengeDetailScreen() {
     }
   }
 
+  // 测试函数 - 模拟交易进度演示
+  const handleTestTransactionFlow = () => {
+    console.log('🎯 开始测试交易流程演示')
+    
+    setShowTransactionModal(true)
+    setCurrentTransactionMode('stake')
+    setTransactionError(undefined)
+    setTransactionSignature(undefined)
+    
+    let currentStep = 0
+    const steps = [
+      TransactionStep.PREPARING,
+      TransactionStep.SIGNING, 
+      TransactionStep.SENDING,
+      TransactionStep.CONFIRMING,
+      TransactionStep.SUCCESS
+    ]
+    
+    const progressDemo = () => {
+      if (currentStep < steps.length) {
+        const step = steps[currentStep]
+        setTransactionStep(step)
+        
+        // 在 SENDING 步骤添加模拟签名
+        if (step === TransactionStep.SENDING) {
+          setTimeout(() => {
+            setTransactionSignature('2NRo2EegWknenUuSfUrXGTH4kY68bCQXGjdFnwXEQJvgFprmsh8vKSqai4xc9MLXFuMdgPd8D2317TvW1f78L2Ue')
+          }, 500)
+        }
+        
+        currentStep++
+        setTimeout(progressDemo, step === TransactionStep.CONFIRMING ? 3000 : 2000)
+      }
+    }
+    
+    progressDemo()
+  }
+
   const handleJoinChallenge = () => {
     setShowStakeModal(true)
   }
@@ -218,17 +256,21 @@ export default function ChallengeDetailScreen() {
     
     console.log('🎯 handleStakeConfirm: Starting stake process')
     
-    // Close confirmation modal, show transaction progress modal
+    // Close confirmation modal first
     setShowStakeModal(false)
     console.log('🎯 handleStakeConfirm: Closed stake modal')
     
-    setShowTransactionModal(true)
-    console.log('🎯 handleStakeConfirm: Should show transaction modal now')
-    
+    // Reset transaction state
     setTransactionError(undefined)
     setTransactionSignature(undefined)
     setCurrentTransactionMode('stake')
     setCurrentRewardAmount(undefined)
+    
+    // Small delay to ensure first modal closes completely
+    setTimeout(() => {
+      setShowTransactionModal(true)
+      console.log('🎯 handleStakeConfirm: Opened transaction modal after delay')
+    }, 100)
     
     try {
       await stakeMutation.mutateAsync({
@@ -247,12 +289,23 @@ export default function ChallengeDetailScreen() {
   const handleClaimConfirm = async () => {
     if (!challenge) return
     
+    console.log('🎯 handleClaimConfirm: Starting claim process')
+    
+    // Close confirmation modal first
     setShowClaimModal(false)
-    setShowTransactionModal(true)
+    console.log('🎯 handleClaimConfirm: Closed claim modal')
+    
+    // Reset transaction state
     setTransactionError(undefined)
     setTransactionSignature(undefined)
     setCurrentTransactionMode('claim')
     setCurrentRewardAmount(Number(challenge.stakeAmount))
+    
+    // Small delay to ensure first modal closes completely
+    setTimeout(() => {
+      setShowTransactionModal(true)
+      console.log('🎯 handleClaimConfirm: Opened transaction modal after delay')
+    }, 100)
     
     try {
       await claimMutation.mutateAsync({
@@ -368,6 +421,18 @@ export default function ChallengeDetailScreen() {
           onClaimReward={handleClaimReward}
           isLoading={stakeMutation.isPending || claimMutation.isPending}
         />
+
+        {/* 测试区域 - 只在开发时显示 */}
+        <View style={styles.testSection}>
+          <AppText style={styles.testSectionTitle}>🧪 测试交易进度Modal</AppText>
+          <TouchableOpacity
+            style={styles.testButton}
+            onPress={handleTestTransactionFlow}
+          >
+            <UiIconSymbol name="play.circle.fill" size={16} color="#ffffff" />
+            <AppText style={styles.testButtonText}>演示完整交易流程</AppText>
+          </TouchableOpacity>
+        </View>
 
         {/* Challenge Details */}
         <View style={styles.detailsCard}>
@@ -628,6 +693,39 @@ const styles = StyleSheet.create({
   creatorBadgeText: {
     fontSize: 10,
     fontWeight: '700',
+    color: '#ffffff',
+  },
+
+  // Test Section
+  testSection: {
+    marginHorizontal: 24,
+    marginBottom: 20,
+    backgroundColor: 'rgba(255, 165, 0, 0.1)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 165, 0, 0.3)',
+  },
+  testSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffa500',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  testButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffa500',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    gap: 8,
+  },
+  testButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: '#ffffff',
   },
 })
