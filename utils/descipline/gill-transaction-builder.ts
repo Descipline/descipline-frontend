@@ -141,18 +141,24 @@ export async function buildStakeInstruction(params: {
 
 /**
  * Build claim instruction using Gill
- * Note: This is simplified - real claim needs merkle proof
  */
 export async function buildClaimInstruction(params: {
   claimer: PublicKey
   challenge: PublicKey
   stakeMint: PublicKey
-  // TODO: Add merkle proof params when implemented
+  merkleProof?: string[]
+  winnerIndex?: number
 }): Promise<TransactionInstruction> {
   const publicKeys = getDesciplinePublicKeys()
   
   // Derive PDAs
   const [receiptPda] = deriveReceiptPda(params.challenge, params.claimer)
+  
+  // Derive resolution PDA - required for claim
+  const [resolutionPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("resolution"), params.challenge.toBuffer()],
+    publicKeys.PROGRAM_ID
+  )
   
   // Get ATAs
   const claimerAta = await getAssociatedTokenAddress(
@@ -166,23 +172,71 @@ export async function buildClaimInstruction(params: {
     true // allowOffCurve for PDA
   )
   
-  // Build instruction data
-  // TODO: Add merkle proof data when implemented
-  const data = Buffer.from(INSTRUCTION_DISCRIMINATORS.claim)
+  // Build instruction data with merkle proof - following contract script format
+  const discriminator = Buffer.from(INSTRUCTION_DISCRIMINATORS.claim)
+  let data = discriminator
   
-  // Build accounts
+  if (params.merkleProof && params.merkleProof.length > 0) {
+    // Convert merkle proof from hex strings to Buffer and concatenate
+    const proofBuffers = params.merkleProof.map(hex => Buffer.from(hex, 'hex'))
+    const proofBytes = Buffer.concat(proofBuffers)
+    
+    // Winner index is required for the claim instruction
+    const winnerIndex = params.winnerIndex ?? 0
+    
+    // Following the contract format: .claim(Array.from(proofBytes), index)
+    // This means the instruction data format is: discriminator + proof_bytes_as_array + index
+    
+    // Convert proof bytes to array format (as bytes)
+    const proofArray = Array.from(proofBytes)
+    
+    // Encode as Vec<u8> (length + data) + u32 index
+    const proofLengthBuffer = Buffer.alloc(4)
+    proofLengthBuffer.writeUInt32LE(proofArray.length, 0)
+    
+    const proofDataBuffer = Buffer.from(proofArray)
+    
+    const indexBuffer = Buffer.alloc(4) 
+    indexBuffer.writeUInt32LE(winnerIndex, 0)
+    
+    // Combine: discriminator + proof_length + proof_data + index
+    data = Buffer.concat([discriminator, proofLengthBuffer, proofDataBuffer, indexBuffer])
+    
+    console.log('🌳 Built claim instruction with merkle proof:', {
+      discriminator: discriminator.toString('hex'),
+      proofLength: proofArray.length,
+      proofHex: proofDataBuffer.toString('hex'),
+      winnerIndex: winnerIndex,
+      totalDataLength: data.length
+    })
+  } else {
+    console.log('⚠️ Building claim instruction without merkle proof - this will likely fail')
+  }
+  
+  // Build accounts - following the exact order from the contract script
   const keys: AccountMeta[] = [
-    { pubkey: params.claimer, isSigner: true, isWritable: true },
-    { pubkey: claimerAta, isSigner: false, isWritable: true },
-    { pubkey: receiptPda, isSigner: false, isWritable: true },
-    { pubkey: vault, isSigner: false, isWritable: true },
-    { pubkey: params.challenge, isSigner: false, isWritable: true },
-    // TODO: Add resolution PDA when implemented
-    { pubkey: params.stakeMint, isSigner: false, isWritable: false },
-    { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-    { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    { pubkey: params.claimer, isSigner: true, isWritable: true },        // winner
+    { pubkey: claimerAta, isSigner: false, isWritable: true },           // winnerAta  
+    { pubkey: params.stakeMint, isSigner: false, isWritable: false },    // stakeMint
+    { pubkey: params.challenge, isSigner: false, isWritable: true },     // challenge
+    { pubkey: resolutionPda, isSigner: false, isWritable: true },        // resolution (was missing!)
+    { pubkey: receiptPda, isSigner: false, isWritable: true },           // receipt
+    { pubkey: vault, isSigner: false, isWritable: true },                // vault
+    { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },    // tokenProgram
+    { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // associatedTokenProgram
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },     // systemProgram
   ]
+  
+  console.log('🔧 Built claim instruction accounts:', {
+    winner: params.claimer.toString(),
+    winnerAta: claimerAta.toString(), 
+    stakeMint: params.stakeMint.toString(),
+    challenge: params.challenge.toString(),
+    resolution: resolutionPda.toString(),
+    receipt: receiptPda.toString(),
+    vault: vault.toString(),
+    accountCount: keys.length
+  })
   
   return new TransactionInstruction({
     keys,

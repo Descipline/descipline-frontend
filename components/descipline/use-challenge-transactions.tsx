@@ -15,6 +15,7 @@ interface StakeChallengeParams {
 interface ClaimRewardParams {
   challenge: Challenge
   merkleProof?: string[]
+  winnerIndex?: number
   onProgressUpdate: (step: TransactionStep, data?: any) => void
 }
 
@@ -243,7 +244,7 @@ export function useClaimReward() {
   const { signAndSendTransaction } = useMobileWallet()
 
   return useMutation({
-    mutationFn: async ({ challenge, merkleProof, onProgressUpdate }: ClaimRewardParams) => {
+    mutationFn: async ({ challenge, merkleProof, winnerIndex, onProgressUpdate }: ClaimRewardParams) => {
       try {
         if (!account) {
           throw new Error('Wallet not connected')
@@ -260,18 +261,35 @@ export function useClaimReward() {
         const challengePublicKey = new PublicKey(challenge.publicKey)
         const stakeMintPublicKey = new PublicKey(challenge.stakeMint || (challenge.tokenAllowed === 'USDC' ? '4NQMuSBhVrqTh8FMv5AbHvADVwHSnxrHNERPdAFu5B8p' : 'So11111111111111111111111111111111111111112'))
         
-        // Build claim instruction using Gill with merkle proof
+        // Build claim instruction using Gill with merkle proof and winner index
         const claimIx = await buildClaimInstruction({
           claimer: account.publicKey,
           challenge: challengePublicKey,
           stakeMint: stakeMintPublicKey,
           merkleProof: merkleProof || [], // Use provided merkle proof
+          winnerIndex: winnerIndex ?? 0, // Use provided winner index
+        })
+        
+        console.log('🎁 Claim instruction built with:', {
+          claimer: account.publicKey.toString(),
+          challenge: challengePublicKey.toString(),
+          stakeMint: stakeMintPublicKey.toString(),
+          merkleProofLength: merkleProof?.length || 0,
+          winnerIndex: winnerIndex ?? 0,
+          proof: merkleProof
         })
 
-        // Build transaction (keep it simple like create challenge)
+        // Build transaction with compute budget for claim
         const transaction = new Transaction()
         transaction.recentBlockhash = blockhash
         transaction.feePayer = account.publicKey
+        
+        // Add compute budget instruction for claim (merkle proof verification needs more compute)
+        const computeBudgetIx = ComputeBudgetProgram.setComputeUnitLimit({
+          units: 400_000, // Higher limit for merkle proof verification
+        })
+        
+        transaction.add(computeBudgetIx)
         transaction.add(claimIx)
 
         console.log('Claim transaction built with', transaction.instructions.length, 'instructions')

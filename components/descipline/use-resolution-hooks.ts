@@ -114,7 +114,8 @@ export function useGetWinnerProof(challengeId: string, userAddress?: string) {
       return { 
         isWinner: false, 
         proof: null,
-        merkleRoot: null 
+        merkleRoot: null,
+        winnerIndex: -1
       }
     }
     
@@ -122,11 +123,13 @@ export function useGetWinnerProof(challengeId: string, userAddress?: string) {
     console.log('🏆 Winners in resolution:', resolution.winners)
     
     const isWinner = resolution.winners.includes(userAddress)
+    const winnerIndex = resolution.winners.indexOf(userAddress)
     const proofData = resolution.merkleProofs.find(p => p.address === userAddress)
     
     console.log('🎯 Winner Check Results:')
     console.log('   - User Address:', userAddress)
     console.log('   - Is Winner:', isWinner)
+    console.log('   - Winner Index:', winnerIndex)
     console.log('   - Has Proof Data:', !!proofData)
     console.log('   - Proof Length:', proofData?.proof?.length || 0)
     console.log('   - Merkle Root:', resolution.merkleRoot)
@@ -134,7 +137,8 @@ export function useGetWinnerProof(challengeId: string, userAddress?: string) {
     return {
       isWinner,
       proof: proofData?.proof || null,
-      merkleRoot: resolution.merkleRoot
+      merkleRoot: resolution.merkleRoot,
+      winnerIndex: winnerIndex >= 0 ? winnerIndex : -1
     }
   }, [resolution, userAddress])
 }

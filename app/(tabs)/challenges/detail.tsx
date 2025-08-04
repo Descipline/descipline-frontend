@@ -103,7 +103,7 @@ export default function ChallengeDetailScreen() {
 
   // Resolution data hooks - following amigo pattern
   const { data: resolution } = useGetResolution(id || '')
-  const { isWinner, proof } = useGetWinnerProof(id || '', account?.publicKey?.toString())
+  const { isWinner, proof, winnerIndex } = useGetWinnerProof(id || '', account?.publicKey?.toString())
   const canUserClaim = useCanUserClaim(id || '', account?.publicKey?.toString())
   const userReward = useGetUserReward(id || '', account?.publicKey?.toString(), challenge ? Number(challenge.stakeAmount) : undefined)
 
@@ -119,6 +119,7 @@ export default function ChallengeDetailScreen() {
       winners: resolution.winners
     } : null,
     isWinner: isWinner,
+    winnerIndex: winnerIndex,
     canClaim: canUserClaim.canClaim,
     claimReason: canUserClaim.reason,
     proof: proof
@@ -313,6 +314,7 @@ export default function ChallengeDetailScreen() {
       await claimMutation.mutateAsync({
         challenge,
         merkleProof: proof, // Pass merkle proof from resolution data
+        winnerIndex: winnerIndex >= 0 ? winnerIndex : 0, // Pass winner index from resolution data
         onProgressUpdate: handleTransactionProgress
       })
       
