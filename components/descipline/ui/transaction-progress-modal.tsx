@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Modal, TouchableOpacity, Linking, Platform } from 'react-native'
+import { View, StyleSheet, Modal, TouchableOpacity, Linking, Platform, ScrollView } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { AppText } from '@/components/app-text'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
@@ -274,21 +274,26 @@ export function TransactionProgressModal({
             style={StyleSheet.absoluteFillObject}
           />
           
-          {/* Progress Circle */}
-          <View style={[styles.iconContainer, { backgroundColor: `${stepInfo.color}20` }]}>
-            <UiIconSymbol 
-              name={stepInfo.icon} 
-              size={48} 
-              color={stepInfo.color} 
-            />
-            {stepInfo.showProgress && (
-              <View style={[styles.progressRing, { borderTopColor: stepInfo.color }]} />
-            )}
-          </View>
+          <ScrollView 
+            style={styles.modalScrollView}
+            contentContainerStyle={styles.modalScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Progress Circle */}
+            <View style={[styles.iconContainer, { backgroundColor: `${stepInfo.color}20` }]}>
+              <UiIconSymbol 
+                name={stepInfo.icon} 
+                size={48} 
+                color={stepInfo.color} 
+              />
+              {stepInfo.showProgress && (
+                <View style={[styles.progressRing, { borderTopColor: stepInfo.color }]} />
+              )}
+            </View>
 
-          {/* Content */}
-          <AppText style={styles.title}>{stepInfo.title}</AppText>
-          <AppText style={styles.message}>{stepInfo.message}</AppText>
+            {/* Content */}
+            <AppText style={styles.title}>{stepInfo.title}</AppText>
+            <AppText style={styles.message}>{stepInfo.message}</AppText>
 
           {/* Transaction Status and Details */}
           {console.log('🔍 Modal render check:', { step, signature: signature ? 'EXISTS' : 'MISSING', showSimpleFlow })}
@@ -421,12 +426,13 @@ export function TransactionProgressModal({
             </View>
           )}
 
-          {/* Simple Close for non-SUCCESS states */}
-          {canClose && step !== TransactionStep.SUCCESS && (
-            <TouchableOpacity style={styles.simpleCloseButton} onPress={onClose}>
-              <AppText style={styles.simpleCloseButtonText}>Close</AppText>
-            </TouchableOpacity>
-          )}
+            {/* Simple Close for non-SUCCESS states */}
+            {canClose && step !== TransactionStep.SUCCESS && (
+              <TouchableOpacity style={styles.simpleCloseButton} onPress={onClose}>
+                <AppText style={styles.simpleCloseButtonText}>Close</AppText>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
         </View>
       </View>
       
@@ -451,12 +457,20 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     borderRadius: 20,
-    padding: 32,
     alignItems: 'center',
     minWidth: 300,
+    maxHeight: '85%', // Limit modal height to prevent overflow
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
+  },
+  modalScrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  modalScrollContent: {
+    padding: 32,
+    alignItems: 'center',
   },
   iconContainer: {
     width: 96,
