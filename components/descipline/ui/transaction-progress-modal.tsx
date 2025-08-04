@@ -46,6 +46,8 @@ export function TransactionProgressModal({
   mode = 'stake',
   rewardAmount
 }: TransactionProgressModalProps) {
+  console.log('🎯 TransactionProgressModal render:', { visible, step, error, signature, mode })
+  
   const connection = useConnection()
   const [txStatus, setTxStatus] = useState<TransactionStatus>(TransactionStatus.PENDING)
   const [confirmations, setConfirmations] = useState(0)

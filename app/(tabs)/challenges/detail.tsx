@@ -193,6 +193,7 @@ export default function ChallengeDetailScreen() {
   }
 
   const handleTransactionProgress = (step: TransactionStep, data?: any) => {
+    console.log('🎯 handleTransactionProgress:', step, data)
     setTransactionStep(step)
     
     if (data?.signature) {
@@ -215,9 +216,15 @@ export default function ChallengeDetailScreen() {
   const handleStakeConfirm = async () => {
     if (!challenge) return
     
+    console.log('🎯 handleStakeConfirm: Starting stake process')
+    
     // Close confirmation modal, show transaction progress modal
     setShowStakeModal(false)
+    console.log('🎯 handleStakeConfirm: Closed stake modal')
+    
     setShowTransactionModal(true)
+    console.log('🎯 handleStakeConfirm: Should show transaction modal now')
+    
     setTransactionError(undefined)
     setTransactionSignature(undefined)
     setCurrentTransactionMode('stake')

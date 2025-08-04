@@ -29,8 +29,8 @@ export function useStakeChallenge() {
         // Step 1: Preparing transaction
         onProgressUpdate(TransactionStep.PREPARING)
         
-        // Get latest blockhash
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
+        // Get latest blockhash with confirmed commitment
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
         
         // Parse challenge data
         const challengePublicKey = new PublicKey(challenge.publicKey)
@@ -68,6 +68,8 @@ export function useStakeChallenge() {
           blockhash,
           lastValidBlockHeight
         }, 'confirmed')
+        
+        console.log('Stake transaction confirmation result:', result)
 
         if (result.value.err) {
           throw new Error(`Transaction failed: ${JSON.stringify(result.value.err)}`)
@@ -102,8 +104,8 @@ export function useClaimReward() {
 
         onProgressUpdate(TransactionStep.PREPARING)
         
-        // Get latest blockhash
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash()
+        // Get latest blockhash with confirmed commitment
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
         
         // Parse challenge data
         const challengePublicKey = new PublicKey(challenge.publicKey)
@@ -138,6 +140,8 @@ export function useClaimReward() {
           blockhash,
           lastValidBlockHeight
         }, 'confirmed')
+        
+        console.log('Claim transaction confirmation result:', result)
 
         if (result.value.err) {
           throw new Error(`Transaction failed: ${JSON.stringify(result.value.err)}`)
