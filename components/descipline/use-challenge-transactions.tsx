@@ -279,17 +279,11 @@ export function useClaimReward() {
           proof: merkleProof
         })
 
-        // Build simple transaction like test.ts - keep it simple!
+        // Build simple transaction - let program decide compute units
         const transaction = new Transaction()
         transaction.recentBlockhash = blockhash
         transaction.feePayer = account.publicKey
         
-        // Add moderate compute budget (test.ts uses 200,000)
-        const computeBudgetIx = ComputeBudgetProgram.setComputeUnitLimit({
-          units: 300_000, // Moderate increase from test.ts
-        })
-        
-        transaction.add(computeBudgetIx)
         transaction.add(claimIx)
 
         console.log('Claim transaction built with', transaction.instructions.length, 'instructions (simple approach)')
