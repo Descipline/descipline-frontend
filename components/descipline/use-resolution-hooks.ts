@@ -24,6 +24,36 @@ export interface ResolutionData {
   resolvedBy: string
 }
 
+// Resolution file resolver - maps challengeId to require() calls
+const getResolutionData = (challengeId: string): ResolutionData | null => {
+  try {
+    console.log('🔍 Attempting to load resolution for challengeId:', challengeId)
+    
+    // Known resolution files - add new ones here as they are created
+    const resolutions: Record<string, any> = {
+      '2HqUUkG6oddhV7GD92Cms85ptTsyZrbqWMWFfPNam3Ds': require('../../assets/resolutions/resolution-2HqUUkG6oddhV7GD92Cms85ptTsyZrbqWMWFfPNam3Ds.json'),
+    }
+    
+    const resolutionData = resolutions[challengeId]
+    
+    if (resolutionData) {
+      console.log('✅ Successfully loaded resolution data!')
+      console.log('📋 Challenge Name:', resolutionData.challengeName)
+      console.log('👥 Total Participants:', resolutionData.totalParticipants)
+      console.log('🏆 Winner Count:', resolutionData.winnerCount)
+      console.log('🎯 Winners List:', resolutionData.winners)
+      console.log('🌳 Merkle Root:', resolutionData.merkleRoot)
+      return resolutionData as ResolutionData
+    } else {
+      console.log('⚠️ No resolution data found for challenge:', challengeId)
+      return null
+    }
+  } catch (error) {
+    console.error('❌ Error loading resolution data:', error)
+    return null
+  }
+}
+
 // Get resolution data from local files
 export function useGetResolution(challengeId: string) {
   return useQuery({
@@ -33,15 +63,18 @@ export function useGetResolution(challengeId: string) {
       
       console.log('🔍 Loading resolution data for challenge:', challengeId)
       
+      // First try the require() method for known files
+      const staticData = getResolutionData(challengeId)
+      if (staticData) {
+        return staticData
+      }
+      
+      // Fallback to fetch method (may not work in React Native but worth trying)
       try {
-        // Dynamically construct resolution file URL
         const resolutionUrl = `/assets/resolutions/resolution-${challengeId}.json`
+        console.log('📁 Fallback: Attempting to fetch resolution file:', resolutionUrl)
         
-        console.log('📁 Attempting to fetch resolution file:', resolutionUrl)
-        
-        // Use fetch to get resolution file
         const response = await fetch(resolutionUrl)
-        
         console.log('📡 Fetch response status:', response.status, response.statusText)
         
         if (!response.ok) {
@@ -51,7 +84,7 @@ export function useGetResolution(challengeId: string) {
         
         const resolutionData = await response.json() as ResolutionData
         
-        console.log('✅ Successfully loaded resolution data!')
+        console.log('✅ Successfully loaded resolution data via fetch!')
         console.log('📋 Challenge Name:', resolutionData.challengeName)
         console.log('👥 Total Participants:', resolutionData.totalParticipants)
         console.log('🏆 Winner Count:', resolutionData.winnerCount)
@@ -61,7 +94,7 @@ export function useGetResolution(challengeId: string) {
         return resolutionData
         
       } catch (error) {
-        console.error('❌ Error loading resolution data:', error)
+        console.error('❌ Both require() and fetch() methods failed:', error)
         console.log('⚠️ This is normal if the challenge has not been resolved yet')
         return null
       }
