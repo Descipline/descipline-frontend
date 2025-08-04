@@ -1,0 +1,22 @@
+{
+  "challengePda": "DSQsFSbs7NrtKwUkAiXJ2sCjZ35zt8H4dUC7RKsH8gdB",
+  "challengeName": "GMGN everyday",
+  "resolutionPda": "ASajSDWp6vTuwZZmVXAn4hPh797A6ww96KMnX6hsLX7d",
+  "attestationPda": "AxGJQdheyoHWUH3VVbyfw9ms8pMN719bgf1WR46EVm6F",
+  "strategy": "first-n",
+  "totalParticipants": 3,
+  "winners": [
+    "7dEDturUW4UFZFgLNm5EQX8MbmFZnXjQViyrDfHNyPrN"
+  ],
+  "winnerCount": 1,
+  "merkleRoot": "aa3df425e55b76828c297d41ac1b9ca25aecd753fbbc2f95766151befb8c3d83",
+  "merkleProofs": [
+    {
+      "address": "7dEDturUW4UFZFgLNm5EQX8MbmFZnXjQViyrDfHNyPrN",
+      "proof": []
+    }
+  ],
+  "resolutionTransaction": "5326XMEmmef6oZnmRALHEF8rB6tTGACiGD6EkvuSL1aM8ViC1uktq8E2hqoH9TVJZ3svh84LK3hkm1wV2irdWmjk",
+  "resolvedAt": "2025-08-04T11:23:31.973Z",
+  "resolvedBy": "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq"
+}

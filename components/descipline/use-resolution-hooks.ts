@@ -32,7 +32,7 @@ const getResolutionData = (challengeId: string): ResolutionData | null => {
     // Known resolution files - add new ones here as they are created
     // Note: These are for the new contract deployment (Program ID: GYvSKR5kzDnf78iARutLVewr77ra88JZrdHuGowKuQmS)
     const resolutions: Record<string, any> = {
-      // Add new resolution files here when they are created for the new contract
+      'DSQsFSbs7NrtKwUkAiXJ2sCjZ35zt8H4dUC7RKsH8gdB': require('../../assets/resolutions/resolution-DSQsFSbs7NrtKwUkAiXJ2sCjZ35zt8H4dUC7RKsH8gdB.json'),
     }
     
     const resolutionData = resolutions[challengeId]
