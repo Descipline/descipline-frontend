@@ -296,7 +296,7 @@ export function TransactionProgressModal({
                 <AppText style={styles.transactionTitle}>📋 Transaction Details</AppText>
                 
                 <View style={styles.transactionRow}>
-                  <AppText style={styles.transactionLabel}>Transaction</AppText>
+                  <AppText style={styles.transactionLabel}>Transaction Hash</AppText>
                   <View style={styles.transactionValueRow}>
                     <AppText style={styles.transactionValue} numberOfLines={1}>
                       {signature.slice(0, 8)}...{signature.slice(-8)}
@@ -352,14 +352,16 @@ export function TransactionProgressModal({
                 <AppText style={styles.primaryButtonText}>View on Explorer</AppText>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.secondaryButton}
-                onPress={onClose}
-                activeOpacity={0.8}
-              >
-                <UiIconSymbol name="xmark" size={16} color={SolanaColors.brand.purple} />
-                <AppText style={styles.secondaryButtonText}>Close</AppText>
-              </TouchableOpacity>
+              <View style={styles.secondaryButtons}>
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={onClose}
+                  activeOpacity={0.8}
+                >
+                  <UiIconSymbol name="xmark" size={16} color={SolanaColors.brand.purple} />
+                  <AppText style={styles.secondaryButtonText}>Close</AppText>
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
@@ -466,7 +468,6 @@ const styles = StyleSheet.create({
   // Success Action Buttons - Following Create Success Style
   actionButtons: {
     marginTop: 8,
-    gap: 12,
   },
   primaryButton: {
     flexDirection: 'row',
@@ -474,24 +475,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 18,
     borderRadius: 16,
-    marginBottom: 8,
+    marginBottom: 12,
     gap: 12,
     overflow: 'hidden',
     shadowColor: SolanaColors.brand.purple,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 12,
   },
   primaryButtonGradient: {
     ...StyleSheet.absoluteFillObject,
   },
   primaryButtonText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#ffffff',
   },
+  secondaryButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
   secondaryButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -205,9 +205,9 @@ export default function ChallengeDetailScreen() {
     }
   }
 
-  // 测试函数 - 模拟交易进度演示
+  // Test function - simulate transaction progress demo
   const handleTestTransactionFlow = () => {
-    console.log('🎯 开始测试交易流程演示')
+    console.log('🎯 Starting test transaction flow demo')
     
     setShowTransactionModal(true)
     setCurrentTransactionMode('stake')
@@ -228,7 +228,7 @@ export default function ChallengeDetailScreen() {
         const step = steps[currentStep]
         setTransactionStep(step)
         
-        // 在 SENDING 步骤添加模拟签名
+        // Add mock signature at SENDING step
         if (step === TransactionStep.SENDING) {
           setTimeout(() => {
             setTransactionSignature('2NRo2EegWknenUuSfUrXGTH4kY68bCQXGjdFnwXEQJvgFprmsh8vKSqai4xc9MLXFuMdgPd8D2317TvW1f78L2Ue')
@@ -422,15 +422,15 @@ export default function ChallengeDetailScreen() {
           isLoading={stakeMutation.isPending || claimMutation.isPending}
         />
 
-        {/* 测试区域 - 只在开发时显示 */}
+        {/* Test Section - Development Only */}
         <View style={styles.testSection}>
-          <AppText style={styles.testSectionTitle}>🧪 测试交易进度Modal</AppText>
+          <AppText style={styles.testSectionTitle}>🧪 Test Transaction Progress Modal</AppText>
           <TouchableOpacity
             style={styles.testButton}
             onPress={handleTestTransactionFlow}
           >
             <UiIconSymbol name="play.circle.fill" size={16} color="#ffffff" />
-            <AppText style={styles.testButtonText}>演示完整交易流程</AppText>
+            <AppText style={styles.testButtonText}>Demo Complete Transaction Flow</AppText>
           </TouchableOpacity>
         </View>
 
