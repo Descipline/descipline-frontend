@@ -30,9 +30,9 @@ const getResolutionData = (challengeId: string): ResolutionData | null => {
     console.log('🔍 Attempting to load resolution for challengeId:', challengeId)
     
     // Known resolution files - add new ones here as they are created
+    // Note: These are for the new contract deployment (Program ID: GYvSKR5kzDnf78iARutLVewr77ra88JZrdHuGowKuQmS)
     const resolutions: Record<string, any> = {
-      '2HqUUkG6oddhV7GD92Cms85ptTsyZrbqWMWFfPNam3Ds': require('../../assets/resolutions/resolution-2HqUUkG6oddhV7GD92Cms85ptTsyZrbqWMWFfPNam3Ds.json'),
-      '3aJzCnwJDynkCMzFDTbNCLVxSMAgzMUbgs3t8oHhMV7k': require('../../assets/resolutions/resolution-3aJzCnwJDynkCMzFDTbNCLVxSMAgzMUbgs3t8oHhMV7k.json'),
+      // Add new resolution files here when they are created for the new contract
     }
     
     const resolutionData = resolutions[challengeId]
