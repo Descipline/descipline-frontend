@@ -14,11 +14,11 @@ import { getDesciplinePublicKeys } from './constants'
 import { deriveChallengePda, deriveCredentialAuthorityPda, deriveReceiptPda } from './pda'
 import { TokenAllowed } from './types'
 
-// Instruction discriminators from IDL
+// Instruction discriminators - must match descipline-lib exactly
 const INSTRUCTION_DISCRIMINATORS = {
   createChallenge: [170, 244, 47, 1, 1, 15, 173, 239],
   stake: [206, 176, 202, 18, 200, 209, 179, 108],
-  claim: [62, 198, 214, 193, 213, 159, 108, 210],
+  claim: [62, 198, 214, 193, 213, 159, 108, 210], // Matches CLAIM_DISCRIMINATOR from descipline-lib
 } as const
 
 /**
@@ -177,27 +177,24 @@ export async function buildClaimInstruction(params: {
   let data = discriminator
   
   if (params.merkleProof && params.merkleProof.length > 0) {
-    // Convert merkle proof from hex strings to Buffer and concatenate (like test.ts)
+    // Convert merkle proof from hex strings to Buffer and concatenate (matching descipline-lib format)
     const proofBuffers = params.merkleProof.map(hex => Buffer.from(hex, 'hex'))
     const proofBytes = Buffer.concat(proofBuffers)
     
     // Winner index is required for the claim instruction
     const winnerIndex = params.winnerIndex ?? 0
     
-    // Following test.ts format: proof: Buffer.from(winner1_proof), index: winner1_index
-    // The descipline-lib likely handles serialization internally
-    // Let's try the simplest approach: discriminator + raw proof bytes + index
+    // Match descipline-lib encoding exactly:
+    // ['proof', addEncoderSizePrefix(getBytesEncoder(), getU32Encoder())] - Vec<u8> with u32 length prefix
+    // ['index', getU8Encoder()] - u8 index
     
-    // Just serialize as the contract expects: Vec<u8> proof + u32 index
-    // Vec<u8> in Borsh: length (4 bytes LE) + data
     const proofLengthBuffer = Buffer.alloc(4)
     proofLengthBuffer.writeUInt32LE(proofBytes.length, 0)
     
-    // u8 index in Borsh: 1 byte (contract expects u8)
     const indexBuffer = Buffer.alloc(1) 
     indexBuffer.writeUInt8(winnerIndex, 0)
     
-    // Combine: discriminator + Vec<u8> + u8 (matches contract signature)
+    // Combine: discriminator + u32 length + proof bytes + u8 index (matches descipline-lib)
     data = Buffer.concat([discriminator, proofLengthBuffer, proofBytes, indexBuffer])
     
     console.log('🌳 Built claim instruction (test.ts style):', {
