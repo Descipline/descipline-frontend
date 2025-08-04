@@ -375,7 +375,6 @@ export default function ChallengeDetailScreen() {
             {/* Challenge PDA Row */}
             <View style={styles.pdaRow}>
               <View style={styles.pdaContent}>
-                <AppText style={styles.pdaLabel}>Challenge PDA</AppText>
                 <View style={styles.pdaValueRow}>
                   <AppText style={styles.pdaValue}>
                     {id ? `${id.slice(0, 8)}...${id.slice(-8)}` : 'Loading...'}
