@@ -6,6 +6,7 @@ import { AppText } from '@/components/app-text'
 import { UiIconSymbol } from '@/components/ui/ui-icon-symbol'
 import { SolanaColors } from '@/constants/colors'
 import { CreateChallengeFormData } from '@/utils/descipline/types'
+import Clipboard from '@react-native-clipboard/clipboard'
 
 interface ChallengeSuccessEnhancedProps {
   transactionResult: {
@@ -40,6 +41,15 @@ export function ChallengeSuccessEnhanced({
   const handleCreateAnother = () => {
     // Navigate back to create page
     router.push('/(tabs)/challenges/create')
+  }
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await Clipboard.setString(text)
+      // Native clipboard feedback will be shown automatically
+    } catch (error) {
+      console.error('Failed to copy:', error)
+    }
   }
 
   const handleViewAllChallenges = () => {
@@ -114,16 +124,34 @@ export function ChallengeSuccessEnhanced({
         
         <View style={styles.transactionRow}>
           <AppText style={styles.transactionLabel}>Challenge ID</AppText>
-          <AppText style={styles.transactionValue} numberOfLines={1}>
-            {transactionResult.challengePda.slice(0, 8)}...{transactionResult.challengePda.slice(-8)}
-          </AppText>
+          <View style={styles.transactionValueRow}>
+            <AppText style={styles.transactionValue} numberOfLines={1}>
+              {transactionResult.challengePda.slice(0, 8)}...{transactionResult.challengePda.slice(-8)}
+            </AppText>
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={() => copyToClipboard(transactionResult.challengePda, 'Challenge ID')}
+              activeOpacity={0.8}
+            >
+              <UiIconSymbol name="doc.on.doc" size={16} color={SolanaColors.brand.purple} />
+            </TouchableOpacity>
+          </View>
         </View>
         
         <View style={styles.transactionRow}>
           <AppText style={styles.transactionLabel}>Transaction</AppText>
-          <AppText style={styles.transactionValue} numberOfLines={1}>
-            {transactionResult.signature.slice(0, 8)}...{transactionResult.signature.slice(-8)}
-          </AppText>
+          <View style={styles.transactionValueRow}>
+            <AppText style={styles.transactionValue} numberOfLines={1}>
+              {transactionResult.signature.slice(0, 8)}...{transactionResult.signature.slice(-8)}
+            </AppText>
+            <TouchableOpacity
+              style={styles.copyButton}
+              onPress={() => copyToClipboard(transactionResult.signature, 'Transaction')}
+              activeOpacity={0.8}
+            >
+              <UiIconSymbol name="doc.on.doc" size={16} color={SolanaColors.brand.purple} />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -165,7 +193,7 @@ export function ChallengeSuccessEnhanced({
 
       {/* Next Steps */}
       <View style={styles.nextStepsCard}>
-        <AppText style={styles.nextStepsTitle}>🚀 What's Next?</AppText>
+        <AppText style={styles.nextStepsTitle}>What's Next?</AppText>
         <View style={styles.nextStepsList}>
           <View style={styles.nextStepItem}>
             <UiIconSymbol name="1.circle.fill" size={16} color="#10b981" />
@@ -298,14 +326,25 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.7)',
     fontWeight: '500',
   },
+  transactionValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
   transactionValue: {
     fontSize: 14,
     color: '#ffffff',
     fontWeight: '600',
     fontFamily: 'monospace',
-    flex: 1,
-    textAlign: 'right',
-    marginLeft: 12,
+  },
+  copyButton: {
+    padding: 4,
+    backgroundColor: 'rgba(153, 69, 255, 0.1)',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(153, 69, 255, 0.3)',
   },
 
   // Action Buttons

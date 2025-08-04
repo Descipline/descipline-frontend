@@ -279,7 +279,6 @@ export function ActionConfirmationModal({
 
             {/* Warning */}
             <View style={styles.warningCard}>
-              <UiIconSymbol name="exclamationmark.triangle.fill" size={20} color="#f59e0b" />
               <View style={styles.warningContent}>
                 <AppText style={styles.warningTitle}>Important</AppText>
                 <AppText style={styles.warningText}>
@@ -529,43 +528,44 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   warningCard: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(245, 158, 11, 0.3)',
-    gap: 12,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   warningContent: {
     flex: 1,
   },
   warningTitle: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#f59e0b',
-    marginBottom: 4,
+    color: '#ffffff',
+    marginBottom: 16,
   },
   warningText: {
-    fontSize: 13,
-    color: 'rgba(245, 158, 11, 0.9)',
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.8)',
     lineHeight: 20,
   },
   actions: {
-    flexDirection: 'row',
-    gap: 12,
     padding: 24,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   cancelButton: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
-    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    gap: 8,
+    marginBottom: 12,
   },
   cancelButtonText: {
     fontSize: 16,
@@ -573,14 +573,14 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   confirmButton: {
-    flex: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    borderRadius: 12,
+    paddingVertical: 18,
+    borderRadius: 16,
     gap: 8,
     overflow: 'hidden',
+    marginBottom: 8,
   },
   confirmButtonGradient: {
     ...StyleSheet.absoluteFillObject,
