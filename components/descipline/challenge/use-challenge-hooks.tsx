@@ -1,16 +1,13 @@
 import { useMutation } from '@tanstack/react-query'
-import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
+import { PublicKey, Transaction } from '@solana/web3.js'
 import { useConnection } from '@/components/solana/solana-provider'
 import { useAuth } from '@/components/auth/auth-provider'
 import { useMobileWallet } from '@/components/solana/use-mobile-wallet'
 import { CreateChallengeFormData, TokenAllowed } from '@/utils/descipline/types'
 import { TransactionStep } from '../ui/transaction-progress-modal'
-import { deriveChallengePda, deriveCredentialAuthorityPda } from '@/utils/descipline/pda'
-import { useDescipline } from '@/components/descipline/descipline-provider'
-import { getDesciplinePublicKeys } from '@/utils/descipline/constants'
-import { getAssociatedTokenAddress, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, NATIVE_MINT } from '@solana/spl-token'
-import { BN } from '@coral-xyz/anchor'
+import { deriveChallengePda } from '@/utils/descipline/pda'
 import { createWrapSolInstructions, calculateWrapSolAmount, checkSolBalance } from '@/utils/descipline/wrap-sol'
+import { buildCreateChallengeInstruction } from '@/utils/descipline/gill-transaction-builder'
 
 interface CreateChallengeParams extends CreateChallengeFormData {
   onProgress?: (step: TransactionStep, data?: any) => void
@@ -20,7 +17,6 @@ export function useCreateChallenge() {
   const connection = useConnection()
   const { account } = useAuth()
   const { signAndSendTransaction } = useMobileWallet()
-  const { program } = useDescipline()
 
   return useMutation({
     mutationFn: async (params: CreateChallengeParams) => {
@@ -29,10 +25,6 @@ export function useCreateChallenge() {
         
         if (!account) {
           throw new Error('Wallet not connected')
-        }
-
-        if (!program) {
-          throw new Error('Descipline program not initialized')
         }
 
         const { onProgress, ...formData } = params
@@ -49,54 +41,23 @@ export function useCreateChallenge() {
         
         // Derive PDAs
         const [challengePda] = deriveChallengePda(account.publicKey, formData.name)
-        const [credentialAuthorityPda] = deriveCredentialAuthorityPda()
         
         console.log('Challenge PDA:', challengePda.toString())
-        console.log('Credential Authority PDA:', credentialAuthorityPda.toString())
-        
-        // Get public keys
-        const publicKeys = getDesciplinePublicKeys()
-        
-        // Get token mint
-        const stakeMint = isUsingSOL ? NATIVE_MINT : publicKeys.USDC_MINT
-        
-        // Get vault ATA (challenge's token account)
-        const vault = await getAssociatedTokenAddress(
-          stakeMint,
-          challengePda,
-          true // allowOffCurve = true for PDA
-        )
-        
-        console.log('Vault ATA:', vault.toString())
-        console.log('Stake Mint:', stakeMint.toString())
         
         // Convert dates to Unix timestamps
         const stakeEndAtUnix = Math.floor(formData.stakeEndAt.getTime() / 1000)
         const claimStartFromUnix = Math.floor(formData.claimStartFrom.getTime() / 1000)
         
-        // Build create challenge instruction
-        const createChallengeIx = await program.methods
-          .createChallenge(
-            formData.name,
-            isUsingSOL ? { wsol: {} } : { usdc: {} },
-            new BN(stakeAmountRaw),
-            formData.fee,
-            new BN(stakeEndAtUnix),
-            new BN(claimStartFromUnix)
-          )
-          .accounts({
-            initiator: account.publicKey,
-            vault,
-            challenge: challengePda,
-            schema: publicKeys.SCHEMA_PDA,
-            credential: publicKeys.CREDENTIAL_PDA,
-            credentialAuthority: credentialAuthorityPda,
-            stakeMint,
-            associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
-            tokenProgram: TOKEN_PROGRAM_ID,
-            systemProgram: SystemProgram.programId,
-          })
-          .instruction()
+        // Build create challenge instruction using Gill
+        const createChallengeIx = await buildCreateChallengeInstruction({
+          initiator: account.publicKey,
+          name: formData.name,
+          tokenAllowed: formData.tokenType,
+          stakeAmount: BigInt(stakeAmountRaw),
+          fee: formData.fee,
+          stakeEndAt: stakeEndAtUnix,
+          claimStartFrom: claimStartFromUnix,
+        })
 
         // Build transaction
         const transaction = new Transaction()
