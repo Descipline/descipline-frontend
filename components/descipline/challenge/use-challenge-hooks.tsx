@@ -5,6 +5,7 @@ import { useAuth } from '@/components/auth/auth-provider'
 import { useMobileWallet } from '@/components/solana/use-mobile-wallet'
 import { CreateChallengeFormData } from '@/utils/descipline/types'
 import { TransactionStep } from '../ui/transaction-progress-modal'
+import { deriveChallengePda } from '@/utils/descipline/pda'
 
 interface CreateChallengeParams extends CreateChallengeFormData {
   onProgress?: (step: TransactionStep, data?: any) => void
@@ -77,12 +78,13 @@ export function useCreateChallenge() {
         // Step 4: Success
         onProgress?.(TransactionStep.SUCCESS, { signature })
         
-        // Generate a mock challenge ID for demo
-        const challengeId = new PublicKey(signature).toString()
+        // Derive the actual challenge PDA that was created
+        const [challengePda] = deriveChallengePda(account.publicKey, formData.name)
         
         return {
           signature,
-          challengeId,
+          challengeId: challengePda.toString(),
+          challengePda,
           formData,
           transactionHash: signature
         }

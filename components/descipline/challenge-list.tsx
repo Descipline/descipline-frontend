@@ -10,6 +10,17 @@ export function ChallengeList() {
   const router = useRouter()
   const { data: challenges, isLoading, refetch, error } = useGetChallengesWithGill()
 
+  // Sort challenges by name in ascending order
+  const sortedChallenges = React.useMemo(() => {
+    if (!challenges) return []
+    
+    return [...challenges].sort((a, b) => {
+      const nameA = a?.name || ''
+      const nameB = b?.name || ''
+      return nameA.localeCompare(nameB)
+    })
+  }, [challenges])
+
   const handleChallengePress = (challengeId: string) => {
     router.push(`/challenges/detail?id=${challengeId}`)
   }
@@ -65,7 +76,7 @@ export function ChallengeList() {
 
   return (
     <FlatList
-      data={challenges || []}
+      data={sortedChallenges}
       renderItem={renderChallenge}
       keyExtractor={(item, index) => {
         // Fallback to index if publicKey is unavailable
