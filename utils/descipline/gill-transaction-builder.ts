@@ -176,10 +176,11 @@ export async function buildClaimInstruction(params: {
   const discriminator = Buffer.from(INSTRUCTION_DISCRIMINATORS.claim)
   let data = discriminator
   
-  if (params.merkleProof && params.merkleProof.length > 0) {
+  if (params.merkleProof !== undefined) {
     // Convert merkle proof from hex strings to Buffer and concatenate (matching descipline-lib format)
+    // Handle empty proof array for single winner case
     const proofBuffers = params.merkleProof.map(hex => Buffer.from(hex, 'hex'))
-    const proofBytes = Buffer.concat(proofBuffers)
+    const proofBytes = proofBuffers.length > 0 ? Buffer.concat(proofBuffers) : Buffer.alloc(0)
     
     // Winner index is required for the claim instruction
     const winnerIndex = params.winnerIndex ?? 0
@@ -195,15 +196,17 @@ export async function buildClaimInstruction(params: {
     indexBuffer.writeUInt8(winnerIndex, 0)
     
     // Combine: discriminator + u32 length + proof bytes + u8 index (matches descipline-lib)
+    // This works for both empty proof (single winner) and non-empty proof (multiple winners)
     data = Buffer.concat([discriminator, proofLengthBuffer, proofBytes, indexBuffer])
     
-    console.log('🌳 Built claim instruction (test.ts style):', {
+    console.log('🌳 Built claim instruction (descipline-lib format):', {
       discriminator: discriminator.toString('hex'),
       proofElements: params.merkleProof.length,
       proofBytesLength: proofBytes.length,
       proofHex: proofBytes.toString('hex'),
       winnerIndex: winnerIndex,
-      totalDataLength: data.length
+      totalDataLength: data.length,
+      isSingleWinner: params.merkleProof.length === 0
     })
   } else {
     console.log('⚠️ Building claim instruction without merkle proof - this will likely fail')
