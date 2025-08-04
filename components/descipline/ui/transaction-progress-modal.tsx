@@ -151,30 +151,110 @@ export function TransactionProgressModal({
             <AppText style={styles.statusTitle}>{getStepTitle(step)}</AppText>
             <AppText style={styles.statusMessage}>{getStepMessage(step)}</AppText>
             
+            {/* Transaction Details Card */}
+            {signature && (
+              <View style={styles.detailsCard}>
+                <AppText style={styles.detailsTitle}>Transaction Details</AppText>
+                <View style={styles.detailRow}>
+                  <AppText style={styles.detailLabel}>Signature</AppText>
+                  <TouchableOpacity 
+                    style={styles.detailValue}
+                    onPress={() => {
+                      console.log('复制签名:', signature)
+                      // TODO: 实际复制到剪贴板
+                    }}
+                  >
+                    <AppText style={styles.detailText}>
+                      {`${signature.slice(0, 8)}...${signature.slice(-8)}`}
+                    </AppText>
+                    <UiIconSymbol name="doc.on.doc" size={14} color="rgba(255, 255, 255, 0.5)" />
+                  </TouchableOpacity>
+                </View>
+                
+                {mode === 'claim' && rewardAmount && (
+                  <View style={styles.detailRow}>
+                    <AppText style={styles.detailLabel}>Reward Amount</AppText>
+                    <AppText style={styles.detailText}>{rewardAmount} USDC</AppText>
+                  </View>
+                )}
+              </View>
+            )}
+
+            {/* Error Details */}
+            {step === TransactionStep.ERROR && error && (
+              <View style={styles.errorCard}>
+                <AppText style={styles.errorTitle}>Error Details</AppText>
+                <AppText style={styles.errorText}>{error}</AppText>
+              </View>
+            )}
+            
             {/* Debug Info */}
             <AppText style={styles.debugText}>
-              调试信息: 当前步骤 = {step}
+              调试信息: 当前步骤 = {step} | 模式 = {mode}
             </AppText>
-            {signature && (
-              <AppText style={styles.debugText}>
-                签名: {signature.slice(0, 8)}...{signature.slice(-8)}
-              </AppText>
-            )}
-            {error && (
-              <AppText style={styles.testError}>
-                错误: {error}
-              </AppText>
-            )}
           </View>
 
           {/* Actions */}
           <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={onClose}
-            >
-              <AppText style={styles.actionButtonText}>关闭</AppText>
-            </TouchableOpacity>
+            {step === TransactionStep.ERROR ? (
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={onClose}
+                >
+                  <AppText style={styles.cancelButtonText}>关闭</AppText>
+                </TouchableOpacity>
+                
+                {onRetry && (
+                  <TouchableOpacity
+                    style={[styles.button, styles.retryButton]}
+                    onPress={() => {
+                      console.log('点击重试按钮 (当前不会真的重试)')
+                      // onRetry() // 暂时不调用真实重试
+                    }}
+                  >
+                    <UiIconSymbol name="arrow.clockwise" size={16} color="#ffffff" />
+                    <AppText style={styles.retryButtonText}>重试</AppText>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : step === TransactionStep.SUCCESS ? (
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[styles.button, styles.successButton]}
+                  onPress={onClose}
+                >
+                  <UiIconSymbol name="checkmark.circle.fill" size={16} color="#ffffff" />
+                  <AppText style={styles.successButtonText}>继续</AppText>
+                </TouchableOpacity>
+                
+                {signature && onViewTransaction && (
+                  <TouchableOpacity
+                    style={[styles.button, styles.viewButton]}
+                    onPress={() => {
+                      console.log('点击查看交易按钮 (当前不会真的打开浏览器)')
+                      // onViewTransaction() // 暂时不调用真实查看
+                    }}
+                  >
+                    <UiIconSymbol name="arrow.up.right.square" size={16} color="rgba(255, 255, 255, 0.8)" />
+                    <AppText style={styles.viewButtonText}>查看交易</AppText>
+                  </TouchableOpacity>
+                )}
+              </View>
+            ) : (
+              // 进行中的步骤 - 只显示取消按钮或不显示按钮
+              step === TransactionStep.PREPARING ? (
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => {
+                    console.log('点击取消按钮 (准备阶段可以取消)')
+                    onClose()
+                  }}
+                >
+                  <AppText style={styles.cancelButtonText}>取消</AppText>
+                </TouchableOpacity>
+              ) : null
+            )}
           </View>
         </TouchableOpacity>
       </TouchableOpacity>
@@ -278,31 +358,114 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
-  testError: {
+  detailsCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  detailsTitle: {
     fontSize: 16,
-    color: '#ef4444',
-    textAlign: 'center',
+    fontWeight: '600',
+    color: '#ffffff',
     marginBottom: 12,
   },
-  actions: {
+  detailRow: {
     flexDirection: 'row',
-    gap: 12,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+  detailValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  detailText: {
+    fontSize: 14,
+    color: '#ffffff',
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  },
+  errorCard: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+  },
+  errorTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ef4444',
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#ef4444',
+    lineHeight: 20,
+  },
+  actions: {
     padding: 24,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  actionButton: {
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  button: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 18,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderRadius: 16,
+    gap: 8,
+  },
+  cancelButton: {
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  retryButton: {
     backgroundColor: SolanaColors.brand.purple,
   },
-  actionButtonText: {
+  retryButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+  },
+  successButton: {
+    backgroundColor: SolanaColors.brand.green,
+  },
+  successButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  viewButton: {
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  viewButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
 })
