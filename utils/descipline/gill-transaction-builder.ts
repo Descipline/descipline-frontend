@@ -193,11 +193,11 @@ export async function buildClaimInstruction(params: {
     const proofLengthBuffer = Buffer.alloc(4)
     proofLengthBuffer.writeUInt32LE(proofBytes.length, 0)
     
-    // u32 index in Borsh: 4 bytes LE
-    const indexBuffer = Buffer.alloc(4) 
-    indexBuffer.writeUInt32LE(winnerIndex, 0)
+    // u8 index in Borsh: 1 byte (contract expects u8)
+    const indexBuffer = Buffer.alloc(1) 
+    indexBuffer.writeUInt8(winnerIndex, 0)
     
-    // Combine: discriminator + Vec<u8> + u32 (standard Borsh serialization)
+    // Combine: discriminator + Vec<u8> + u8 (matches contract signature)
     data = Buffer.concat([discriminator, proofLengthBuffer, proofBytes, indexBuffer])
     
     console.log('🌳 Built claim instruction (test.ts style):', {
