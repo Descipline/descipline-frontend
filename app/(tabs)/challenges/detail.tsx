@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useLayoutEffect } from 'react'
-import { ScrollView, RefreshControl, View, StyleSheet } from 'react-native'
+import { ScrollView, RefreshControl, View, StyleSheet, TouchableOpacity } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import { AppView } from '@/components/app-view'
 import { AppText } from '@/components/app-text'
