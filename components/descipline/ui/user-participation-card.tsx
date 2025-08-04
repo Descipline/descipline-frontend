@@ -125,9 +125,9 @@ export function UserParticipationCard({
           
           {userParticipation.isWinner && (
             <View style={styles.detailRow}>
-              <UiIconSymbol name="crown.fill" size={14} color="#fbbf24" />
+              {/* <UiIconSymbol name="crown.fill" size={14} color="#fbbf24" /> */}
               <AppText style={[styles.detailText, { color: '#fbbf24' }]}>
-                🏆 Winner!
+                🏆 Winner
               </AppText>
             </View>
           )}
@@ -141,7 +141,7 @@ export function UserParticipationCard({
             disabled={isLoading}
             activeOpacity={0.8}
           >
-            <UiIconSymbol name="gift.fill" size={16} color="#ffffff" />
+            {/* <UiIconSymbol name="gift.fill" size={16} color="#ffffff" /> */}
             <AppText style={styles.buttonText}>
               {isLoading ? 'Claiming...' : '💰 Claim Reward'}
             </AppText>
