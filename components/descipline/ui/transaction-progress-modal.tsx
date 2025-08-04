@@ -135,12 +135,28 @@ export function TransactionProgressModal({
 
           {/* Content */}
           <View style={styles.content}>
-            <AppText style={styles.testTitle}>测试交易进度弹窗</AppText>
-            <AppText style={styles.testMessage}>
-              当前步骤: {step}
+            {/* Progress Icon */}
+            <View style={styles.iconContainer}>
+              <UiIconSymbol 
+                name={getStepIcon(step)} 
+                size={48} 
+                color={getStepColor(step)} 
+              />
+              {shouldShowProgress(step) && (
+                <View style={[styles.progressRing, { borderTopColor: getStepColor(step) }]} />
+              )}
+            </View>
+
+            {/* Status Text */}
+            <AppText style={styles.statusTitle}>{getStepTitle(step)}</AppText>
+            <AppText style={styles.statusMessage}>{getStepMessage(step)}</AppText>
+            
+            {/* Debug Info */}
+            <AppText style={styles.debugText}>
+              调试信息: 当前步骤 = {step}
             </AppText>
             {signature && (
-              <AppText style={styles.testMessage}>
+              <AppText style={styles.debugText}>
                 签名: {signature.slice(0, 8)}...{signature.slice(-8)}
               </AppText>
             )}
@@ -222,18 +238,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  testTitle: {
-    fontSize: 24,
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+    position: 'relative',
+    backgroundColor: 'rgba(153, 69, 255, 0.2)',
+  },
+  progressRing: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2,
+    borderColor: 'rgba(153, 69, 255, 0.3)',
+    borderTopColor: SolanaColors.brand.purple,
+  },
+  statusTitle: {
+    fontSize: 20,
     fontWeight: '600',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
-  testMessage: {
-    fontSize: 16,
+  statusMessage: {
+    fontSize: 14,
     color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 24,
+    paddingHorizontal: 16,
+  },
+  debugText: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.5)',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
   },
   testError: {
     fontSize: 16,
