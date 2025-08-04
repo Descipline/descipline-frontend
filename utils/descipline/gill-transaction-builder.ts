@@ -119,17 +119,17 @@ export async function buildStakeInstruction(params: {
   // Build instruction data (just discriminator for stake)
   const data = Buffer.from(INSTRUCTION_DISCRIMINATORS.stake)
   
-  // Build accounts
+  // Build accounts - IMPORTANT: Order must match the contract's Stake struct
   const keys: AccountMeta[] = [
-    { pubkey: params.challenger, isSigner: true, isWritable: true },
-    { pubkey: challengerAta, isSigner: false, isWritable: true },
-    { pubkey: receiptPda, isSigner: false, isWritable: true },
-    { pubkey: vault, isSigner: false, isWritable: true },
-    { pubkey: params.challenge, isSigner: false, isWritable: true },
-    { pubkey: params.stakeMint, isSigner: false, isWritable: false },
-    { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-    { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    { pubkey: params.challenger, isSigner: true, isWritable: true },          // 0: challenger
+    { pubkey: challengerAta, isSigner: false, isWritable: true },            // 1: challenger_ata  
+    { pubkey: receiptPda, isSigner: false, isWritable: true },               // 2: receipt (to be created)
+    { pubkey: vault, isSigner: false, isWritable: true },                    // 3: vault
+    { pubkey: params.challenge, isSigner: false, isWritable: false },        // 4: challenge (read-only!)
+    { pubkey: params.stakeMint, isSigner: false, isWritable: false },        // 5: stake_mint
+    { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false }, // 6: associated_token_program
+    { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },        // 7: token_program
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }, // 8: system_program
   ]
   
   return new TransactionInstruction({

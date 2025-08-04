@@ -205,43 +205,6 @@ export default function ChallengeDetailScreen() {
     }
   }
 
-  // Test function - simulate transaction progress demo
-  const handleTestTransactionFlow = () => {
-    console.log('🎯 Starting test transaction flow demo')
-    
-    setShowTransactionModal(true)
-    setCurrentTransactionMode('stake')
-    setTransactionError(undefined)
-    setTransactionSignature(undefined)
-    
-    let currentStep = 0
-    const steps = [
-      TransactionStep.PREPARING,
-      TransactionStep.SIGNING, 
-      TransactionStep.SENDING,
-      TransactionStep.CONFIRMING,
-      TransactionStep.SUCCESS
-    ]
-    
-    const progressDemo = () => {
-      if (currentStep < steps.length) {
-        const step = steps[currentStep]
-        setTransactionStep(step)
-        
-        // Add mock signature at SENDING step
-        if (step === TransactionStep.SENDING) {
-          setTimeout(() => {
-            setTransactionSignature('2NRo2EegWknenUuSfUrXGTH4kY68bCQXGjdFnwXEQJvgFprmsh8vKSqai4xc9MLXFuMdgPd8D2317TvW1f78L2Ue')
-          }, 500)
-        }
-        
-        currentStep++
-        setTimeout(progressDemo, step === TransactionStep.CONFIRMING ? 3000 : 2000)
-      }
-    }
-    
-    progressDemo()
-  }
 
   const handleJoinChallenge = () => {
     setShowStakeModal(true)
@@ -422,17 +385,6 @@ export default function ChallengeDetailScreen() {
           isLoading={stakeMutation.isPending || claimMutation.isPending}
         />
 
-        {/* Test Section - Development Only */}
-        <View style={styles.testSection}>
-          <AppText style={styles.testSectionTitle}>🧪 Test Transaction Progress Modal</AppText>
-          <TouchableOpacity
-            style={styles.testButton}
-            onPress={handleTestTransactionFlow}
-          >
-            <UiIconSymbol name="play.circle.fill" size={16} color="#ffffff" />
-            <AppText style={styles.testButtonText}>Demo Complete Transaction Flow</AppText>
-          </TouchableOpacity>
-        </View>
 
         {/* Challenge Details */}
         <View style={styles.detailsCard}>
@@ -696,36 +648,4 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
 
-  // Test Section
-  testSection: {
-    marginHorizontal: 24,
-    marginBottom: 20,
-    backgroundColor: 'rgba(255, 165, 0, 0.1)',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 165, 0, 0.3)',
-  },
-  testSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#ffa500',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  testButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#ffa500',
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  testButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#ffffff',
-  },
 })
