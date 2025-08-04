@@ -2,9 +2,9 @@ import { PublicKey } from '@solana/web3.js'
 
 // Address constants as strings to avoid early PublicKey construction
 const ADDRESSES = {
-  PROGRAM_ID: 'J5qn6hBAMS1YfNpN7oARJZmdjSqnsMT5Zz33tHGmLiK',
+  PROGRAM_ID: 'GYvSKR5kzDnf78iARutLVewr77ra88JZrdHuGowKuQmS',
   CREDENTIAL_PDA: '9XoDadoNQS14omZ8UP3xQFGXxFDoYwCdPBUDzQLRoX8f',
-  CREDENTIAL_AUTHORITY_PDA: '6vso4DAqcnGnoWjBWU6L4RsgMmRLndX6vjntjH4zhtUa',
+  CREDENTIAL_AUTHORITY_PDA: '8jy6URmqNj7sEK669C6EMD2Ar6DASQuce7sPZ8BXKkdb',
   SCHEMA_PDA: 'J2XusujyFzjnLU5cCTJALQgzyzH4dX4en3rZPZYaTUKc',
   PLATFORM_ATTESTER: 'H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq',
   USDC_MINT: '4NQMuSBhVrqTh8FMv5AbHvADVwHSnxrHNERPdAFu5B8p',
