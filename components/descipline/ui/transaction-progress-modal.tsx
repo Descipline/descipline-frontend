@@ -34,6 +34,8 @@ interface TransactionProgressModalProps {
   onViewTransaction?: () => void
   mode?: 'stake' | 'claim'
   rewardAmount?: number
+  tokenSymbol?: string
+  decimals?: number
 }
 
 export function TransactionProgressModal({
@@ -45,7 +47,9 @@ export function TransactionProgressModal({
   onRetry,
   onViewTransaction,
   mode = 'stake',
-  rewardAmount
+  rewardAmount,
+  tokenSymbol = 'USDC',
+  decimals = 6
 }: TransactionProgressModalProps) {
   const connection = useConnection()
   const [txStatus, setTxStatus] = useState<TransactionStatus>(TransactionStatus.PENDING)
@@ -314,7 +318,7 @@ export function TransactionProgressModal({
                     <AppText style={styles.transactionLabel}>Reward Amount</AppText>
                     <View style={styles.transactionValueRow}>
                       <AppText style={styles.transactionValue}>
-                        {(rewardAmount / Math.pow(10, 6)).toFixed(2)} USDC
+                        {(rewardAmount / Math.pow(10, decimals)).toFixed(decimals === 9 ? 4 : 2)} {tokenSymbol}
                       </AppText>
                     </View>
                   </View>

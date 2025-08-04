@@ -27,7 +27,8 @@ export function ParticipantsList({
   currentUserAddress
 }: ParticipantsListProps) {
   const formatAmount = (amount: number) => {
-    return `${(amount / Math.pow(10, decimals)).toFixed(2)} ${tokenSymbol}`
+    const decimalPlaces = decimals === 9 ? 4 : 2 // SOL shows 4 decimals, USDC shows 2
+    return `${(amount / Math.pow(10, decimals)).toFixed(decimalPlaces)} ${tokenSymbol}`
   }
 
   const formatAddress = (address: string) => {

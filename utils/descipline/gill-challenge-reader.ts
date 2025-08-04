@@ -158,7 +158,7 @@ function parseChallengeData(buffer: Buffer, publicKey: string): GillChallengeDat
       name,
       credentialPda: schema, // Using schema as credential for now
       schemaPda: schema,
-      stakeMint: tokenAllowed === 'USDC' ? 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' : 'So11111111111111111111111111111111111111112',
+      stakeMint: tokenAllowed === 'USDC' ? '4NQMuSBhVrqTh8FMv5AbHvADVwHSnxrHNERPdAFu5B8p' : 'So11111111111111111111111111111111111111112',
       tokenAllowed,
       stakeAmount,
       totalStaked: stakeAmount, // We don't track total staked in contract

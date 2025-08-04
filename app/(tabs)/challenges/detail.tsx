@@ -135,8 +135,11 @@ export default function ChallengeDetailScreen() {
     }
 
     const isCreator = account && challenge.initiator === account.publicKey.toString()
-    const tokenSymbol = 'USDC' // Currently hardcoded, should be derived from challenge.tokenAllowed
-    const decimals = 6 // Currently hardcoded for USDC
+    
+    // Determine token symbol and decimals from challenge data
+    const isWSol = challenge.tokenAllowed === 'WSOL' || challenge.tokenAllowed === 'wsol'
+    const tokenSymbol = isWSol ? 'SOL' : 'USDC'
+    const decimals = isWSol ? 9 : 6
     
     // Use real participants data from gill
     const participants: ChallengeParticipant[] = realParticipants?.map(p => ({
@@ -178,8 +181,14 @@ export default function ChallengeDetailScreen() {
     }
   }, [challenge, account])
 
-  const formatAmount = (amount: number) => {
-    return `${(amount / 1000000).toFixed(2)} USDC`
+  const formatAmount = (amount: number, tokenSymbol?: string, decimals?: number) => {
+    const symbol = tokenSymbol || challengeData?.tokenSymbol || 'USDC'
+    const precision = decimals || challengeData?.decimals || 6
+    const divisor = Math.pow(10, precision)
+    // SOL (9 decimals) shows 4 decimal places, USDC (6 decimals) shows 2 decimal places
+    const decimalPlaces = precision === 9 ? 4 : 2
+    const formatted = (amount / divisor).toFixed(decimalPlaces)
+    return `${formatted} ${symbol}`
   }
 
   const formatTime = (time: Date) => {
@@ -368,7 +377,7 @@ export default function ChallengeDetailScreen() {
               </View>
               <View style={styles.statItem}>
                 <UiIconSymbol name="dollarsign.circle.fill" size={16} color="#fbbf24" />
-                <AppText style={styles.statText}>{formatAmount(challengeData.participants.length * Number(challenge.stakeAmount))} total</AppText>
+                <AppText style={styles.statText}>{formatAmount(challengeData.participants.length * Number(challenge.stakeAmount), challengeData.tokenSymbol, challengeData.decimals)} total</AppText>
               </View>
             </View>
           </View>
@@ -394,7 +403,7 @@ export default function ChallengeDetailScreen() {
             <DetailItem
               icon="dollarsign.circle"
               label="Stake Amount"
-              value={formatAmount(Number(challenge.stakeAmount))}
+              value={formatAmount(Number(challenge.stakeAmount), challengeData.tokenSymbol, challengeData.decimals)}
             />
             <DetailItem
               icon="star.fill"
@@ -457,6 +466,8 @@ export default function ChallengeDetailScreen() {
         onViewTransaction={handleViewTransaction}
         mode={currentTransactionMode}
         rewardAmount={currentRewardAmount}
+        tokenSymbol={challengeData?.tokenSymbol}
+        decimals={challengeData?.decimals}
       />
 
       {/* Stake Confirmation Modal */}
