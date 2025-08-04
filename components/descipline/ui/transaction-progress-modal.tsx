@@ -83,13 +83,13 @@ export function TransactionProgressModal({
     Linking.openURL(url)
   }
 
-  // Auto-close for simple flow (create challenge)
+  // Auto-close for simple flow (create challenge) - close right after CONFIRMING
   useEffect(() => {
-    if (showSimpleFlow && step === TransactionStep.SUCCESS) {
-      // Auto close after 2 seconds for simple flow, no need to wait for signature polling
+    if (showSimpleFlow && step === TransactionStep.CONFIRMING) {
+      // Auto close after CONFIRMING step, don't wait for SUCCESS
       const timeout = setTimeout(() => {
         onClose()
-      }, 2000)
+      }, 1500) // Close after showing CONFIRMING for 1.5s
       
       return () => clearTimeout(timeout)
     }
@@ -314,7 +314,8 @@ export function TransactionProgressModal({
               {/* Transaction Information - Spacious Layout */}
               {console.log('🔍 Rendering transaction card with signature:', signature)}
               <View style={[styles.transactionCard, styles.fullWidthCard]}>
-                <View style={styles.transactionRow}>
+                {/* Transaction Hash - Vertical Layout */}
+                <View style={styles.transactionItem}>
                   <AppText style={styles.transactionLabel}>Transaction Hash</AppText>
                   <View style={styles.transactionValueRow}>
                     <AppText style={styles.transactionValue} numberOfLines={1}>
@@ -335,8 +336,8 @@ export function TransactionProgressModal({
                   </View>
                 </View>
                 
-                {/* Program Address Row */}
-                <View style={styles.transactionRow}>
+                {/* Program Address - Vertical Layout */}
+                <View style={styles.transactionItem}>
                   <AppText style={styles.transactionLabel}>Program Address</AppText>
                   <View style={styles.transactionValueRow}>
                     <AppText style={styles.transactionValue} numberOfLines={1}>
@@ -658,11 +659,16 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 8,
   },
+  // New vertical layout for mobile
+  transactionItem: {
+    marginBottom: 16,
+  },
   transactionLabel: {
     fontSize: 15,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
     flex: 1,
+    marginBottom: 8, // Add spacing for vertical layout
   },
   transactionValueRow: {
     flexDirection: 'row',
