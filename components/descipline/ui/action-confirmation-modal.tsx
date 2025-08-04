@@ -550,22 +550,23 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actions: {
+    flexDirection: 'row',
+    gap: 12,
     padding: 24,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   cancelButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingVertical: 16,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     gap: 8,
-    marginBottom: 12,
   },
   cancelButtonText: {
     fontSize: 16,
@@ -573,6 +574,7 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   confirmButton: {
+    flex: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -580,7 +582,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     gap: 8,
     overflow: 'hidden',
-    marginBottom: 8,
   },
   confirmButtonGradient: {
     ...StyleSheet.absoluteFillObject,
