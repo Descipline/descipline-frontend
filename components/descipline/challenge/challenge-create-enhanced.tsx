@@ -91,7 +91,7 @@ interface ChallengePreviewProps {
 function getLoadingMessage(currentStep: CreateStep, tokenType: TokenAllowed): string {
   switch (currentStep) {
     case CreateStep.CREATING_CHALLENGE:
-      return tokenType === TokenAllowed.WSOL ? 'Wrapping SOL & Creating...' : 'Creating Challenge...'
+      return tokenType === TokenAllowed.WSOL ? 'Wrapping SOL & Creating...' : 'Creating...'
     default:
       return 'Processing...'
   }
