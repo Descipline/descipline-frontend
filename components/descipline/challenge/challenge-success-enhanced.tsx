@@ -34,8 +34,9 @@ export function ChallengeSuccessEnhanced({
   }
 
   const handleViewChallenge = () => {
-    // Navigate to the challenge detail page
-    router.push(`/(tabs)/challenges/detail?id=${transactionResult.challengePda}`)
+    // Navigate to challenges list since the challenge doesn't actually exist yet
+    // (current implementation is placeholder)
+    router.push('/(tabs)/challenges')
   }
 
   const handleCreateAnother = () => {
@@ -166,8 +167,8 @@ export function ChallengeSuccessEnhanced({
             colors={[SolanaColors.brand.purple, '#dc1fff']}
             style={styles.primaryButtonGradient}
           />
-          <UiIconSymbol name="eye.fill" size={20} color="#ffffff" />
-          <AppText style={styles.primaryButtonText}>View Challenge</AppText>
+          <UiIconSymbol name="list.bullet" size={20} color="#ffffff" />
+          <AppText style={styles.primaryButtonText}>View Challenges</AppText>
         </TouchableOpacity>
 
         <View style={styles.secondaryButtons}>
