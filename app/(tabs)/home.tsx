@@ -260,11 +260,10 @@ export default function Home() {
             
             <AppText style={styles.heroTitle}>DESCIPLINE</AppText>
             <AppText style={styles.heroSubtitle}>
-              Turn self-discipline into on-chain accountability
+              An open challenge arena where discipline is rewarded.
             </AppText>
             <AppText style={styles.heroDescription}>
-              Stake your commitment. Prove your discipline. Earn rewards. 
-              The blockchain never lies about your progress.
+              <br/><br/>
             </AppText>
 
             <Animated.View

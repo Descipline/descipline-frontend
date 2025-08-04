@@ -372,6 +372,39 @@ export default function ChallengeDetailScreen() {
               <ChallengeStatusBadge status={challengeData.status} />
             </View>
             
+            {/* Challenge PDA Row */}
+            <View style={styles.pdaRow}>
+              <View style={styles.pdaContent}>
+                <AppText style={styles.pdaLabel}>Challenge PDA</AppText>
+                <View style={styles.pdaValueRow}>
+                  <AppText style={styles.pdaValue}>
+                    {id ? `${id.slice(0, 8)}...${id.slice(-8)}` : 'Loading...'}
+                  </AppText>
+                  <TouchableOpacity
+                    style={styles.pdaCopyButton}
+                    onPress={() => {
+                      if (id) {
+                        // Import Clipboard dynamically
+                        import('@react-native-clipboard/clipboard').then(({ default: Clipboard }) => {
+                          Clipboard.setString(id)
+                          // You can add a toast notification here if needed
+                          console.log('Challenge PDA copied:', id)
+                        })
+                      }
+                    }}
+                    activeOpacity={0.8}
+                    disabled={!id}
+                  >
+                    <UiIconSymbol 
+                      name="doc.on.doc" 
+                      size={14} 
+                      color={id ? SolanaColors.brand.purple : 'rgba(153, 69, 255, 0.3)'} 
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
                 <UiIconSymbol name="person.2.fill" size={16} color={SolanaColors.brand.purple} />
@@ -563,6 +596,38 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     flex: 1,
     marginRight: 12,
+  },
+  // Challenge PDA styles
+  pdaRow: {
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  pdaContent: {
+    alignItems: 'flex-start',
+  },
+  pdaLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  pdaValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  pdaValue: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '600',
+    fontFamily: 'monospace',
+  },
+  pdaCopyButton: {
+    padding: 4,
+    backgroundColor: 'rgba(153, 69, 255, 0.15)',
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(153, 69, 255, 0.3)',
   },
   statsRow: {
     flexDirection: 'row',
