@@ -698,13 +698,11 @@ export function ChallengeCreateEnhanced() {
         <View style={styles.timeSummaryCard}>
           <View style={styles.timeSummaryRow}>
             <View style={styles.timeSummaryItem}>
-              <UiIconSymbol name="play.fill" size={16} color="#10b981" />
               <AppText style={styles.timeSummaryLabel}>Staking Starts</AppText>
               <AppText style={styles.timeSummaryValue}>Now</AppText>
             </View>
             <View style={styles.timeSummaryDivider} />
             <View style={styles.timeSummaryItem}>
-              <UiIconSymbol name="stop.fill" size={16} color={SolanaColors.brand.purple} />
               <AppText style={styles.timeSummaryLabel}>Staking Ends</AppText>
               <AppText style={styles.timeSummaryValue}>
                 {formData.stakeEndAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -712,7 +710,6 @@ export function ChallengeCreateEnhanced() {
             </View>
             <View style={styles.timeSummaryDivider} />
             <View style={styles.timeSummaryItem}>
-              <UiIconSymbol name="gift.fill" size={16} color="#f59e0b" />
               <AppText style={styles.timeSummaryLabel}>Claims Start</AppText>
               <AppText style={styles.timeSummaryValue}>
                 {formData.claimStartFrom.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
