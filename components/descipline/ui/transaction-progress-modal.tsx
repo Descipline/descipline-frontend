@@ -291,10 +291,8 @@ export function TransactionProgressModal({
                 </View>
               )}
 
-              {/* Transaction Details - Following Create Success Style */}
+              {/* Transaction Information - Spacious Layout */}
               <View style={styles.transactionCard}>
-                <AppText style={styles.transactionTitle}>📋 Transaction Details</AppText>
-                
                 <View style={styles.transactionRow}>
                   <AppText style={styles.transactionLabel}>Transaction Hash</AppText>
                   <View style={styles.transactionValueRow}>
@@ -465,17 +463,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
   },
-  // Success Action Buttons - Following Create Success Style
+  // Success Action Buttons - Full Width Layout
   actionButtons: {
-    marginTop: 8,
+    marginTop: 12,
+    marginHorizontal: -8, // Extend closer to modal edges
+    gap: 16,
   },
   primaryButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 18,
+    paddingHorizontal: 24,
     borderRadius: 16,
-    marginBottom: 12,
     gap: 12,
     overflow: 'hidden',
     shadowColor: SolanaColors.brand.purple,
@@ -492,16 +492,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
   },
-  secondaryButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
   secondaryButton: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: SolanaColors.brand.purple,
@@ -509,7 +505,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   secondaryButtonText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: SolanaColors.brand.purple,
   },
@@ -583,10 +579,47 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     fontWeight: '500',
   },
+  // Transaction Card - Spacious Layout
+  transactionCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  transactionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  transactionLabel: {
+    fontSize: 15,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
+    flex: 1,
+  },
+  transactionValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 2,
+    justifyContent: 'flex-end',
+  },
+  transactionValue: {
+    fontSize: 15,
+    color: '#ffffff',
+    fontWeight: '600',
+    fontFamily: 'monospace',
+  },
   copyButton: {
-    padding: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 6,
+    padding: 6,
+    backgroundColor: 'rgba(153, 69, 255, 0.15)',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(153, 69, 255, 0.4)',
   },
   explorerButton: {
     flexDirection: 'row',
