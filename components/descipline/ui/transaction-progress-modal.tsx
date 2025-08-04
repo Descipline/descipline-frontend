@@ -103,70 +103,65 @@ export function TransactionProgressModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <ScrollView 
-            style={styles.scrollView}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={true}
-            bounces={false}
-          >
-            <LinearGradient
-              colors={[SolanaColors.brand.dark, '#1a0b2e']}
-              style={StyleSheet.absoluteFillObject}
-            />
-            
-            {/* Progress Circle */}
-            <View style={styles.iconContainer}>
+      <TouchableOpacity 
+        style={styles.overlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          style={styles.modalContainer}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <LinearGradient
+            colors={[SolanaColors.brand.dark, '#1a0b2e']}
+            style={StyleSheet.absoluteFillObject}
+          />
+          
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
               <UiIconSymbol 
-                name={getStepIcon(step)} 
-                size={48} 
-                color={getStepColor(step)} 
+                name="clock.fill" 
+                size={24} 
+                color={SolanaColors.brand.purple} 
               />
-              {shouldShowProgress(step) && (
-                <View style={[styles.progressRing, { borderTopColor: getStepColor(step) }]} />
-              )}
+              <AppText style={styles.headerTitle}>Transaction Progress</AppText>
             </View>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <UiIconSymbol name="xmark" size={16} color="rgba(255, 255, 255, 0.7)" />
+            </TouchableOpacity>
+          </View>
 
-            {/* Content */}
-            <AppText style={styles.title}>{getStepTitle(step)}</AppText>
-            <AppText style={styles.message}>{getStepMessage(step)}</AppText>
-
-            {/* Transaction Details */}
+          {/* Content */}
+          <View style={styles.content}>
+            <AppText style={styles.testTitle}>测试交易进度弹窗</AppText>
+            <AppText style={styles.testMessage}>
+              当前步骤: {step}
+            </AppText>
             {signature && (
-              <View style={styles.detailsCard}>
-                <AppText style={styles.detailsTitle}>Transaction Details</AppText>
-                <View style={styles.detailRow}>
-                  <AppText style={styles.detailLabel}>Signature</AppText>
-                  <AppText style={styles.detailText}>
-                    {`${signature.slice(0, 8)}...${signature.slice(-8)}`}
-                  </AppText>
-                </View>
-              </View>
+              <AppText style={styles.testMessage}>
+                签名: {signature.slice(0, 8)}...{signature.slice(-8)}
+              </AppText>
             )}
+            {error && (
+              <AppText style={styles.testError}>
+                错误: {error}
+              </AppText>
+            )}
+          </View>
 
-            {/* Action Buttons */}
-            <View style={styles.buttonContainer}>
-              {step === TransactionStep.ERROR ? (
-                <TouchableOpacity
-                  style={[styles.button, styles.closeButton]}
-                  onPress={onClose}
-                >
-                  <AppText style={styles.closeButtonText}>Close</AppText>
-                </TouchableOpacity>
-              ) : (step === TransactionStep.SUCCESS || step === TransactionStep.ERROR) ? (
-                <TouchableOpacity
-                  style={[styles.button, styles.closeButton]}
-                  onPress={onClose}
-                >
-                  <UiIconSymbol name="checkmark.circle.fill" size={16} color="#ffffff" />
-                  <AppText style={styles.closeButtonText}>Continue</AppText>
-                </TouchableOpacity>
-              ) : null}
-            </View>
-          </ScrollView>
-        </View>
-      </View>
+          {/* Actions */}
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={onClose}
+            >
+              <AppText style={styles.actionButtonText}>关闭</AppText>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   )
 }
@@ -182,101 +177,87 @@ const styles = StyleSheet.create({
   modalContainer: {
     backgroundColor: SolanaColors.brand.dark,
     borderRadius: 20,
+    width: '100%',
+    maxWidth: 480,
+    maxHeight: '85%',
+    minHeight: 400,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    width: '100%',
-    maxWidth: 400,
-    maxHeight: '80%',
-    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 20,
+    flexDirection: 'column',
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 32,
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 300,
+    justifyContent: 'space-between',
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
-  iconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    justifyContent: 'center',
+  headerLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
-    position: 'relative',
-    backgroundColor: 'rgba(153, 69, 255, 0.2)',
+    gap: 12,
   },
-  progressRing: {
-    position: 'absolute',
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    borderWidth: 2,
-    borderColor: 'rgba(153, 69, 255, 0.3)',
-    borderTopColor: SolanaColors.brand.purple,
-  },
-  title: {
+  headerTitle: {
     fontSize: 20,
     fontWeight: '600',
     color: '#ffffff',
-    textAlign: 'center',
-    marginBottom: 8,
   },
-  message: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
-    textAlign: 'center',
-    marginBottom: 32,
-    paddingHorizontal: 16,
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  detailsCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+  content: {
+    flex: 1,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  detailsTitle: {
-    fontSize: 16,
+  testTitle: {
+    fontSize: 24,
     fontWeight: '600',
     color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  testMessage: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'center',
     marginBottom: 12,
   },
-  detailRow: {
+  testError: {
+    fontSize: 16,
+    color: '#ef4444',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  actions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
+    gap: 12,
+    padding: 24,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
-  detailLabel: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
-  },
-  detailText: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-  },
-  buttonContainer: {
-    width: '100%',
-    marginTop: 16,
-  },
-  button: {
+  actionButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 18,
     borderRadius: 16,
-    gap: 8,
-  },
-  closeButton: {
     backgroundColor: SolanaColors.brand.purple,
   },
-  closeButtonText: {
+  actionButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
