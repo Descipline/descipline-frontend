@@ -19,6 +19,7 @@ import { ParticipantsList } from '@/components/descipline/ui/participants-list'
 import { ActionConfirmationModal } from '@/components/descipline/ui/action-confirmation-modal'
 import { TransactionProgressModal, TransactionStep } from '@/components/descipline/ui/transaction-progress-modal'
 import { useStakeChallenge, useClaimReward } from '@/components/descipline/use-challenge-transactions'
+import { useGetResolution, useGetWinnerProof, useCanUserClaim, useGetUserReward } from '@/components/descipline/use-resolution-hooks'
 
 interface ChallengeParticipant {
   address: string
@@ -100,6 +101,12 @@ export default function ChallengeDetailScreen() {
     challenge?.stakeAmount || '0'
   )
 
+  // Resolution data hooks - following amigo pattern
+  const { data: resolution } = useGetResolution(id || '')
+  const { isWinner, proof } = useGetWinnerProof(id || '', account?.publicKey?.toString())
+  const canUserClaim = useCanUserClaim(id || '', account?.publicKey?.toString())
+  const userReward = useGetUserReward(id || '', account?.publicKey?.toString())
+
   // Modal states
   const [showStakeModal, setShowStakeModal] = useState(false)
   const [showClaimModal, setShowClaimModal] = useState(false)
@@ -124,14 +131,18 @@ export default function ChallengeDetailScreen() {
     const claimTime = new Date(Number(challenge.claimStartFrom) * 1000)
     const now = Date.now()
     
-    // Determine challenge status
+    // Determine challenge status - enhanced with resolution data
     let status: ChallengeStatus
     if (now < Number(challenge.stakeEndAt) * 1000) {
       status = ChallengeStatus.ACTIVE
     } else if (now < Number(challenge.claimStartFrom) * 1000) {
       status = ChallengeStatus.ENDED
-    } else {
+    } else if (resolution) {
+      // If resolution exists, challenge is resolved
       status = ChallengeStatus.RESOLVED
+    } else {
+      // Otherwise still ended, waiting for resolution
+      status = ChallengeStatus.ENDED
     }
 
     const isCreator = account && challenge.initiator === account.publicKey.toString()
@@ -141,31 +152,31 @@ export default function ChallengeDetailScreen() {
     const tokenSymbol = isWSol ? 'SOL' : 'USDC'
     const decimals = isWSol ? 9 : 6
     
-    // Use real participants data from gill
+    // Use real participants data from gill + resolution winner info
     const participants: ChallengeParticipant[] = realParticipants?.map(p => ({
       address: p.address,
       stakeAmount: Number(p.stakeAmount),
       participationTime: p.participationTime,
-      isWinner: false,
-      hasClaimed: false
+      isWinner: resolution?.winners.includes(p.address) || false,
+      hasClaimed: false // TODO: 可以从链上查询实际领取状态
     })) || [
       // Fallback: always include initiator
       {
         address: challenge.initiator,
         stakeAmount: Number(challenge.stakeAmount),
         participationTime: new Date(Date.now() - 86400000),
-        isWinner: false,
+        isWinner: resolution?.winners.includes(challenge.initiator) || false,
         hasClaimed: false
       }
     ]
 
-    // Use real user participation check from gill
+    // Use real user participation check from gill + resolution data
     const userParticipation: UserParticipation | null = account && hasParticipated ? {
       isParticipant: true,
       stakeAmount: Number(challenge.stakeAmount),
-      canClaim: false,
-      hasClaimed: false,
-      isWinner: false,
+      canClaim: canUserClaim.canClaim, // Based on resolution file
+      hasClaimed: false, // TODO: 可以从链上查询实际状态
+      isWinner: isWinner, // Based on resolution file
       participationTime: new Date()
     } : null
 
@@ -284,6 +295,7 @@ export default function ChallengeDetailScreen() {
     try {
       await claimMutation.mutateAsync({
         challenge,
+        merkleProof: proof, // Pass merkle proof from resolution data
         onProgressUpdate: handleTransactionProgress
       })
       

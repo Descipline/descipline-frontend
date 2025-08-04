@@ -12,6 +12,12 @@ interface StakeChallengeParams {
   onProgressUpdate: (step: TransactionStep, data?: any) => void
 }
 
+interface ClaimRewardParams {
+  challenge: Challenge
+  merkleProof?: string[]
+  onProgressUpdate: (step: TransactionStep, data?: any) => void
+}
+
 export function useStakeChallenge() {
   const connection = useConnection()
   const { account } = useAuth()
@@ -237,7 +243,7 @@ export function useClaimReward() {
   const { signAndSendTransaction } = useMobileWallet()
 
   return useMutation({
-    mutationFn: async ({ challenge, onProgressUpdate }: StakeChallengeParams) => {
+    mutationFn: async ({ challenge, merkleProof, onProgressUpdate }: ClaimRewardParams) => {
       try {
         if (!account) {
           throw new Error('Wallet not connected')
@@ -254,12 +260,12 @@ export function useClaimReward() {
         const challengePublicKey = new PublicKey(challenge.publicKey)
         const stakeMintPublicKey = new PublicKey(challenge.stakeMint || (challenge.tokenAllowed === 'USDC' ? '4NQMuSBhVrqTh8FMv5AbHvADVwHSnxrHNERPdAFu5B8p' : 'So11111111111111111111111111111111111111112'))
         
-        // Build claim instruction using Gill
+        // Build claim instruction using Gill with merkle proof
         const claimIx = await buildClaimInstruction({
           claimer: account.publicKey,
           challenge: challengePublicKey,
           stakeMint: stakeMintPublicKey,
-          // TODO: Add merkle proof params when implemented
+          merkleProof: merkleProof || [], // Use provided merkle proof
         })
 
         // Build transaction (keep it simple like create challenge)

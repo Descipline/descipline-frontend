@@ -1,0 +1,31 @@
+{
+  "challengePda": "2HqUUkG6oddhV7GD92Cms85ptTsyZrbqWMWFfPNam3Ds",
+  "challengeName": "mango juice",
+  "resolutionPda": "3E4mZmTBEoY7vdTV5tVdGuXREgfUGrBE5CJfT7SjS5t1",
+  "attestationPda": "BYyrsGpP3RZfiPQSsw4fZvVKJ6PZAKjgmJfcbbTL4Sgt",
+  "strategy": "first-half",
+  "totalParticipants": 3,
+  "winners": [
+    "7dEDturUW4UFZFgLNm5EQX8MbmFZnXjQViyrDfHNyPrN",
+    "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq"
+  ],
+  "winnerCount": 2,
+  "merkleRoot": "6df2daadb72fcbaa7154d2ec27ca5e5e71a921428fd69b6dd43a2d486ac866bf",
+  "merkleProofs": [
+    {
+      "address": "7dEDturUW4UFZFgLNm5EQX8MbmFZnXjQViyrDfHNyPrN",
+      "proof": [
+        "0d8558f7beaa45482ea1fa768d3ba3212de6b299ecffb81d3c02014d05f6a30a"
+      ]
+    },
+    {
+      "address": "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq",
+      "proof": [
+        "8864621dbdc9e3e6b7787d165a84d0028f65d46a4356cb0d2a37dc850856f867"
+      ]
+    }
+  ],
+  "resolutionTransaction": "5oXTQYDPqJgi8xCkLpqHMChfnPxQwmpqt1whT3cwcSeTmG8zeyJrM4x7v7rtDcTUZ2bXMYdt96aN83wA3kdJMQnr",
+  "resolvedAt": "2025-08-04T07:32:09.504Z",
+  "resolvedBy": "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq"
+}
