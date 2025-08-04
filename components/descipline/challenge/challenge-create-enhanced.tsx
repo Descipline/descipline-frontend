@@ -348,11 +348,11 @@ export function ChallengeCreateEnhanced() {
             setCurrentStep(CreateStep.CREATING_CHALLENGE)
             break
           case TransactionStep.SUCCESS:
-            // Keep modal open to show success, then transition
+            // For simple flow, auto-close quickly and show success page
             setTimeout(() => {
               setShowTransactionModal(false)
               setCurrentStep(CreateStep.SUCCESS)
-            }, 2000)
+            }, 2000) // Keep 2 second delay to show success animation
             break
           case TransactionStep.ERROR:
             // Keep modal open to show error
@@ -795,7 +795,8 @@ export function ChallengeCreateEnhanced() {
         onClose={handleTransactionClose}
         onRetry={handleTransactionRetry}
         onViewTransaction={handleViewTransaction}
-        mode="stake" // Using stake mode as it's similar to challenge creation
+        mode="create" // Using create mode
+        showSimpleFlow={true} // Simple flow for create challenge - only show 4 steps
       />
     </AppView>
   )
