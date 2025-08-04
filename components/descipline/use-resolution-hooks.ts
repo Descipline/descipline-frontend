@@ -32,6 +32,7 @@ const getResolutionData = (challengeId: string): ResolutionData | null => {
     // Known resolution files - add new ones here as they are created
     const resolutions: Record<string, any> = {
       '2HqUUkG6oddhV7GD92Cms85ptTsyZrbqWMWFfPNam3Ds': require('../../assets/resolutions/resolution-2HqUUkG6oddhV7GD92Cms85ptTsyZrbqWMWFfPNam3Ds.json'),
+      '3aJzCnwJDynkCMzFDTbNCLVxSMAgzMUbgs3t8oHhMV7k': require('../../assets/resolutions/resolution-3aJzCnwJDynkCMzFDTbNCLVxSMAgzMUbgs3t8oHhMV7k.json'),
     }
     
     const resolutionData = resolutions[challengeId]
