@@ -316,7 +316,7 @@ export default function ChallengeDetailScreen() {
         merkleProof: proof, // Pass merkle proof from resolution data
         winnerIndex: winnerIndex >= 0 ? winnerIndex : 0, // Pass winner index from resolution data
         onProgressUpdate: handleTransactionProgress,
-        resolutionData: resolutionData // Pass resolution data for mock reward calculation
+        resolutionData: resolution // Pass resolution data for mock reward calculation
       })
       
       refetch()
