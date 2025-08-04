@@ -105,7 +105,7 @@ export default function ChallengeDetailScreen() {
   const { data: resolution } = useGetResolution(id || '')
   const { isWinner, proof } = useGetWinnerProof(id || '', account?.publicKey?.toString())
   const canUserClaim = useCanUserClaim(id || '', account?.publicKey?.toString())
-  const userReward = useGetUserReward(id || '', account?.publicKey?.toString())
+  const userReward = useGetUserReward(id || '', account?.publicKey?.toString(), challenge ? Number(challenge.stakeAmount) : undefined)
 
   // Debug logging for resolution and winner status
   console.log('🔍 Challenge Detail Debug:', {
@@ -301,7 +301,7 @@ export default function ChallengeDetailScreen() {
     setTransactionError(undefined)
     setTransactionSignature(undefined)
     setCurrentTransactionMode('claim')
-    setCurrentRewardAmount(Number(challenge.stakeAmount))
+    setCurrentRewardAmount(userReward.rewardAmount)
     
     // Small delay to ensure first modal closes completely
     setTimeout(() => {
@@ -559,7 +559,7 @@ export default function ChallengeDetailScreen() {
           loading={claimMutation.isPending}
           realParticipantCount={challengeData?.participants.length}
           mode="claim"
-          rewardAmount={Number(challenge.stakeAmount)}
+          rewardAmount={userReward.rewardAmount}
           isWinner={true}
         />
       )}

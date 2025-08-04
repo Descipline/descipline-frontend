@@ -190,13 +190,13 @@ export function useCanUserClaim(challengeId: string, userAddress?: string) {
   }, [resolution, resolutionLoading, isWinner, userAddress])
 }
 
-// Get user's reward amount (calculated based on resolution data)
-export function useGetUserReward(challengeId: string, userAddress?: string) {
+// Get user's reward amount (calculated based on resolution data and challenge stake amount)
+export function useGetUserReward(challengeId: string, userAddress?: string, challengeStakeAmount?: number) {
   const { data: resolution } = useGetResolution(challengeId)
   const { isWinner } = useGetWinnerProof(challengeId, userAddress)
   
   return useMemo(() => {
-    if (!resolution || !isWinner) {
+    if (!resolution || !isWinner || !challengeStakeAmount) {
       return {
         rewardAmount: 0,
         tokenSymbol: 'USDC',
@@ -204,17 +204,27 @@ export function useGetUserReward(challengeId: string, userAddress?: string) {
       }
     }
     
-    // Calculation logic based on amigo:
-    // Total reward pool = stake amount per person × total participants
-    // Individual reward = total reward pool ÷ winner count
-    const stakeAmount = 2000000 // Can be inferred from resolution or fetched from chain
-    const totalRewardPool = stakeAmount * resolution.totalParticipants
+    // Test phase calculation logic:
+    // Total reward pool = challenge.stakeAmount × totalParticipants from resolution JSON
+    // Individual reward = total reward pool ÷ winner count from resolution JSON
+    // Example: 2 USDC × 3 participants = 6 USDC total pool
+    // 6 USDC ÷ 2 winners = 3 USDC per winner
+    const totalRewardPool = challengeStakeAmount * resolution.totalParticipants  
     const individualReward = totalRewardPool / resolution.winnerCount
+    
+    console.log('💰 Reward Calculation:', {
+      challengeStakeAmount,
+      totalParticipants: resolution.totalParticipants,
+      winnerCount: resolution.winnerCount,
+      totalRewardPool,
+      individualReward,
+      example: `${challengeStakeAmount / 1000000} USDC × ${resolution.totalParticipants} = ${totalRewardPool / 1000000} USDC total, ÷ ${resolution.winnerCount} = ${individualReward / 1000000} USDC per winner`
+    })
     
     return {
       rewardAmount: individualReward,
       tokenSymbol: 'USDC', // Can be fetched from chain or resolution data
       decimals: 6
     }
-  }, [resolution, isWinner])
+  }, [resolution, isWinner, challengeStakeAmount])
 }
