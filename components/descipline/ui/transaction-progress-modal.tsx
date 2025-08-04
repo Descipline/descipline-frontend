@@ -235,6 +235,11 @@ export function TransactionProgressModal({
   const canClose = step === TransactionStep.SUCCESS || step === TransactionStep.ERROR
   const isSuccess = step === TransactionStep.SUCCESS
 
+  if (!visible) {
+    console.log('🎯 TransactionProgressModal: Not rendering because visible=false')
+    return null
+  }
+
   return (
     <Modal
       visible={visible}
@@ -242,7 +247,7 @@ export function TransactionProgressModal({
       animationType="fade"
       onRequestClose={canClose ? onClose : undefined}
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { backgroundColor: 'rgba(255, 0, 0, 0.9)' }]}>
         <TouchableOpacity 
           style={styles.modalContainer}
           activeOpacity={1}

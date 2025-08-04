@@ -136,7 +136,12 @@ export function ActionConfirmationModal({
           </View>
 
           {/* Content */}
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={true}>
+          <ScrollView 
+            style={styles.content} 
+            showsVerticalScrollIndicator={true}
+            bounces={false}
+            contentContainerStyle={styles.contentContainer}
+          >
             {/* Challenge Info */}
             <View style={styles.section}>
               <AppText style={styles.sectionTitle}>Challenge Details</AppText>
@@ -395,8 +400,12 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 24,
-    minHeight: 300,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  contentContainer: {
+    paddingBottom: 16,
+    minHeight: 200,
   },
   section: {
     marginBottom: 24,
