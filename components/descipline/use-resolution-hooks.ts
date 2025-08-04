@@ -33,6 +33,7 @@ const getResolutionData = (challengeId: string): ResolutionData | null => {
     // Note: These are for the new contract deployment (Program ID: GYvSKR5kzDnf78iARutLVewr77ra88JZrdHuGowKuQmS)
     const resolutions: Record<string, any> = {
       'DSQsFSbs7NrtKwUkAiXJ2sCjZ35zt8H4dUC7RKsH8gdB': require('../../assets/resolutions/resolution-DSQsFSbs7NrtKwUkAiXJ2sCjZ35zt8H4dUC7RKsH8gdB.json'),
+      'CyW9u5ZXg2XvUypSaTKnkc4mrziNxpBouXdwmMjSboRD': require('../../assets/resolutions/resolution-CyW9u5ZXg2XvUypSaTKnkc4mrziNxpBouXdwmMjSboRD.json'),
     }
     
     const resolutionData = resolutions[challengeId]

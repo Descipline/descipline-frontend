@@ -244,55 +244,71 @@ export function useClaimReward() {
   const { signAndSendTransaction } = useMobileWallet()
 
   return useMutation({
-    mutationFn: async ({ challenge, merkleProof, winnerIndex, onProgressUpdate }: ClaimRewardParams) => {
+    mutationFn: async ({ challenge, merkleProof, winnerIndex, onProgressUpdate, resolutionData }: ClaimRewardParams & { resolutionData?: any }) => {
       try {
         if (!account) {
           throw new Error('Wallet not connected')
         }
 
-        console.log('Claiming reward for challenge:', challenge.publicKey, 'with user:', account.publicKey.toString())
+        console.log('🎭 MOCK: Claiming reward for challenge:', challenge.publicKey, 'with user:', account.publicKey.toString())
 
         onProgressUpdate(TransactionStep.PREPARING)
         
-        // Get latest blockhash - use confirmed like create challenge  
+        // MOCK: Calculate reward amount based on resolution data
+        let rewardAmount = challenge.stakeAmount // Default fallback
+        
+        if (resolutionData) {
+          // Correct calculation: total pool = stakeAmount × totalParticipants, divided by winnerCount
+          const totalPool = challenge.stakeAmount * resolutionData.totalParticipants
+          rewardAmount = totalPool / resolutionData.winnerCount
+          
+          console.log('💰 MOCK: Reward calculation based on resolution data:', {
+            stakeAmount: challenge.stakeAmount / 1e6,
+            totalParticipants: resolutionData.totalParticipants,
+            winnerCount: resolutionData.winnerCount,
+            totalPool: totalPool / 1e6,
+            rewardPerWinner: rewardAmount / 1e6
+          })
+        } else {
+          console.log('⚠️ MOCK: Resolution data not provided, using fallback calculation')
+        }
+        
+        console.log('💰 MOCK: Calculated reward amount:', rewardAmount / 1e6, 'USDC (simulated)')
+        
+        // Get latest blockhash for self-transfer transaction  
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
         
-        // Parse challenge data
-        const challengePublicKey = new PublicKey(challenge.publicKey)
-        const stakeMintPublicKey = new PublicKey(challenge.stakeMint || (challenge.tokenAllowed === 'USDC' ? '4NQMuSBhVrqTh8FMv5AbHvADVwHSnxrHNERPdAFu5B8p' : 'So11111111111111111111111111111111111111112'))
-        
-        // Build claim instruction using Gill with merkle proof and winner index
-        const claimIx = await buildClaimInstruction({
-          claimer: account.publicKey,
-          challenge: challengePublicKey,
-          stakeMint: stakeMintPublicKey,
-          merkleProof: merkleProof || [], // Use provided merkle proof
-          winnerIndex: winnerIndex ?? 0, // Use provided winner index
-        })
-        
-        console.log('🎁 Claim instruction built with:', {
+        console.log('🎁 MOCK: Preparing self-transfer to simulate claim:', {
           claimer: account.publicKey.toString(),
-          challenge: challengePublicKey.toString(),
-          stakeMint: stakeMintPublicKey.toString(),
+          challenge: challenge.publicKey,
+          mockRewardAmount: rewardAmount / 1e6,
           merkleProofLength: merkleProof?.length || 0,
           winnerIndex: winnerIndex ?? 0,
           proof: merkleProof
         })
 
-        // Build simple transaction - let program decide compute units
+        // MOCK: Create a simple self-transfer transaction to simulate claim
         const transaction = new Transaction()
         transaction.recentBlockhash = blockhash
         transaction.feePayer = account.publicKey
         
-        transaction.add(claimIx)
+        // Add a minimal SOL self-transfer (0.001 SOL) to simulate the claim
+        const { SystemProgram } = await import('@solana/web3.js')
+        const mockTransferIx = SystemProgram.transfer({
+          fromPubkey: account.publicKey,
+          toPubkey: account.publicKey, // Self-transfer
+          lamports: 1000000, // 0.001 SOL
+        })
+        
+        transaction.add(mockTransferIx)
 
-        console.log('Claim transaction built with', transaction.instructions.length, 'instructions (simple approach)')
+        console.log('🎭 MOCK: Claim transaction built with self-transfer simulation')
 
         onProgressUpdate(TransactionStep.SIGNING)
         onProgressUpdate(TransactionStep.SENDING)
         
         const signature = await signAndSendTransaction(transaction, lastValidBlockHeight)
-        console.log('Claim transaction sent:', signature)
+        console.log('🎭 MOCK: Self-transfer sent to simulate claim:', signature)
 
         onProgressUpdate(TransactionStep.CONFIRMING, { signature })
         
@@ -310,15 +326,19 @@ export function useClaimReward() {
         
         const result = confirmationResult as any
         
-        console.log('Claim transaction confirmation result:', result)
+        console.log('🎭 MOCK: Claim transaction confirmation result:', result)
 
         if (result.value.err) {
-          throw new Error(`Transaction failed: ${JSON.stringify(result.value.err)}`)
+          throw new Error(`MOCK Claim failed: ${JSON.stringify(result.value.err)}`)
         }
 
+        console.log('🎉 MOCK: Claim reward simulation completed successfully!')
+        console.log(`💰 MOCK: Simulated reward of ${rewardAmount / 1e6} USDC claimed`)
+        console.log('ℹ️  MOCK: This is a self-transfer simulation for testing purposes')
+        
         onProgressUpdate(TransactionStep.SUCCESS, { signature })
         
-        return { signature, success: true }
+        return { signature, success: true, mockReward: rewardAmount }
       } catch (error: any) {
         console.error('Claim transaction failed:', error)
         onProgressUpdate(TransactionStep.ERROR, { error: error.message })

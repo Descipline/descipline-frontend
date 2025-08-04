@@ -1,0 +1,31 @@
+{
+  "challengePda": "CyW9u5ZXg2XvUypSaTKnkc4mrziNxpBouXdwmMjSboRD",
+  "challengeName": "Walk 10,000 steps daily",
+  "resolutionPda": "7X17myFCPdXg1EyyF5eJfYNb4KWr9DCsr5tdsxaNCPFE",
+  "attestationPda": "4S3XQArnEesqMaQC3zD7178AmnFJYnCwZ18kpuRxEfUv",
+  "strategy": "first-half",
+  "totalParticipants": 3,
+  "winners": [
+    "7dEDturUW4UFZFgLNm5EQX8MbmFZnXjQViyrDfHNyPrN",
+    "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq"
+  ],
+  "winnerCount": 2,
+  "merkleRoot": "918fc8ddd565bbe4dd940036e604571996f4d290e3b8874d5bcf6c325538eef6",
+  "merkleProofs": [
+    {
+      "address": "7dEDturUW4UFZFgLNm5EQX8MbmFZnXjQViyrDfHNyPrN",
+      "proof": [
+        "ac912e54c14156359fb650fecc2fe879875a89aa37a7f41067d3b2b2a112bd68"
+      ]
+    },
+    {
+      "address": "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq",
+      "proof": [
+        "aa3df425e55b76828c297d41ac1b9ca25aecd753fbbc2f95766151befb8c3d83"
+      ]
+    }
+  ],
+  "resolutionTransaction": "3kqUBrhxJvYDvNxBh9xaknUeeoaygjQWqdzH4Qwv9ozM1c95D32CaExvATZ48hTqHzLB5x9zTeyVgXkihnRMvNZK",
+  "resolvedAt": "2025-08-04T12:05:46.010Z",
+  "resolvedBy": "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq"
+}
