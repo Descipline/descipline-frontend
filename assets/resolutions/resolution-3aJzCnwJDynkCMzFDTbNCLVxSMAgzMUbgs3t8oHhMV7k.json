@@ -1,0 +1,31 @@
+{
+  "challengePda": "3aJzCnwJDynkCMzFDTbNCLVxSMAgzMUbgs3t8oHhMV7k",
+  "challengeName": "banana latte",
+  "resolutionPda": "7u7LVnvVuA7qcJSywxpVJkbmcjmAsQ3dck2zze1DVLsq",
+  "attestationPda": "DGY59neeLd1s8zd3id7jaUdaYzhi1cfn4tUADtZcbmqe",
+  "strategy": "first-half",
+  "totalParticipants": 3,
+  "winners": [
+    "7dEDturUW4UFZFgLNm5EQX8MbmFZnXjQViyrDfHNyPrN",
+    "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq"
+  ],
+  "winnerCount": 2,
+  "merkleRoot": "918fc8ddd565bbe4dd940036e604571996f4d290e3b8874d5bcf6c325538eef6",
+  "merkleProofs": [
+    {
+      "address": "7dEDturUW4UFZFgLNm5EQX8MbmFZnXjQViyrDfHNyPrN",
+      "proof": [
+        "ac912e54c14156359fb650fecc2fe879875a89aa37a7f41067d3b2b2a112bd68"
+      ]
+    },
+    {
+      "address": "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq",
+      "proof": [
+        "aa3df425e55b76828c297d41ac1b9ca25aecd753fbbc2f95766151befb8c3d83"
+      ]
+    }
+  ],
+  "resolutionTransaction": "4mtjUR3ATcgAJyGojhHyjBTf66RSSn5c38gELAzbDYJMwjVbnxodTuDsYPXpqdZuBGj913bmZhrQHRgUftoToEq2",
+  "resolvedAt": "2025-08-04T09:42:48.740Z",
+  "resolvedBy": "H49r52ra2zrrA27dy21JVzo8YcVSrtE1LcirPGDXU8Mq"
+}
