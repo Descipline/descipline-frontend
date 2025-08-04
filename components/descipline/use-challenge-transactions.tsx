@@ -56,25 +56,52 @@ export function useStakeChallenge() {
           account.publicKey
         )
         
+        // Check if it's WSOL (native SOL) or USDC
+        const isWSol = stakeMintPublicKey.equals(new PublicKey('So11111111111111111111111111111111111111112'))
+        
         try {
           const ataInfo = await connection.getAccountInfo(challengerAta)
-          if (!ataInfo) {
+          
+          if (!ataInfo && isWSol) {
+            // For WSOL, we need to create ATA and wrap SOL
+            console.log('⚠️  WSOL ATA does not exist, need to create and wrap SOL')
+            
+            // Check native SOL balance
+            const solBalance = await connection.getBalance(account.publicKey)
+            const requiredAmount = BigInt(challenge.stakeAmount)
+            const rentExemption = BigInt(2039280) // Rent exemption for token account
+            
+            console.log('Native SOL balance:', solBalance.toString())
+            console.log('Required WSOL amount:', requiredAmount.toString())
+            console.log('Rent exemption needed:', rentExemption.toString())
+            
+            if (BigInt(solBalance) < requiredAmount + rentExemption + BigInt(5000)) { // 5000 lamports for transaction fees
+              throw new Error(`Insufficient SOL balance. Required: ${(requiredAmount + rentExemption + BigInt(5000)).toString()} lamports, Available: ${solBalance.toString()} lamports`)
+            }
+            
+            console.log('✓ Sufficient SOL balance for wrapping')
+          } else if (!ataInfo) {
+            // For USDC or other tokens, user must have ATA
             throw new Error('User does not have a token account for the stake mint. Please create an associated token account first.')
-          }
-          console.log('✓ User token account exists:', challengerAta.toString())
-          
-          // Parse token account data to check balance
-          const tokenAccountData = Buffer.from(ataInfo.data)
-          const amount = tokenAccountData.readBigUInt64LE(64) // Amount is at offset 64
-          console.log('User token balance:', amount.toString())
-          console.log('Required stake amount:', challenge.stakeAmount)
-          
-          if (amount < BigInt(challenge.stakeAmount)) {
-            throw new Error(`Insufficient token balance. Required: ${challenge.stakeAmount}, Available: ${amount.toString()}`)
+          } else {
+            console.log('✓ User token account exists:', challengerAta.toString())
+            
+            // Parse token account data to check balance
+            const tokenAccountData = Buffer.from(ataInfo.data)
+            const amount = tokenAccountData.readBigUInt64LE(64) // Amount is at offset 64
+            console.log('User token balance:', amount.toString())
+            console.log('Required stake amount:', challenge.stakeAmount)
+            
+            if (amount < BigInt(challenge.stakeAmount)) {
+              const decimals = isWSol ? 9 : 6 // WSOL has 9 decimals, USDC has 6
+              const availableFormatted = (Number(amount) / Math.pow(10, decimals)).toFixed(decimals)
+              const requiredFormatted = (Number(challenge.stakeAmount) / Math.pow(10, decimals)).toFixed(decimals)
+              throw new Error(`Insufficient token balance. Required: ${requiredFormatted} ${challenge.tokenAllowed}, Available: ${availableFormatted} ${challenge.tokenAllowed}`)
+            }
           }
         } catch (error: any) {
           console.error('Token balance check failed:', error)
-          throw new Error(`Token balance check failed: ${error.message}`)
+          throw error
         }
         
         // Build stake instruction using Gill
@@ -89,10 +116,55 @@ export function useStakeChallenge() {
           console.log(`${index}: ${key.pubkey.toString()} (signer: ${key.isSigner}, writable: ${key.isWritable})`)
         })
 
-        // Build transaction (keep it simple like create challenge)
+        // Build transaction
         const transaction = new Transaction()
         transaction.recentBlockhash = blockhash
         transaction.feePayer = account.publicKey
+        
+        // For WSOL, add ATA creation and SOL wrapping instructions if needed
+        if (isWSol) {
+          const ataInfo = await connection.getAccountInfo(challengerAta)
+          if (!ataInfo) {
+            console.log('Adding WSOL ATA creation and wrapping instructions...')
+            
+            const { 
+              createAssociatedTokenAccountInstruction,
+              createSyncNativeInstruction,
+              TOKEN_PROGRAM_ID,
+              ASSOCIATED_TOKEN_PROGRAM_ID
+            } = await import('@solana/spl-token')
+            const { SystemProgram } = await import('@solana/web3.js')
+            
+            // 1. Create Associated Token Account for WSOL
+            const createAtaIx = createAssociatedTokenAccountInstruction(
+              account.publicKey, // payer
+              challengerAta,     // ata
+              account.publicKey, // owner
+              stakeMintPublicKey, // mint (WSOL)
+              TOKEN_PROGRAM_ID,
+              ASSOCIATED_TOKEN_PROGRAM_ID
+            )
+            
+            // 2. Transfer SOL to the ATA (this wraps SOL to WSOL)
+            const wrapSolIx = SystemProgram.transfer({
+              fromPubkey: account.publicKey,
+              toPubkey: challengerAta,
+              lamports: BigInt(challenge.stakeAmount)
+            })
+            
+            // 3. Sync native (mark the account as a native token account)
+            const syncNativeIx = createSyncNativeInstruction(challengerAta, TOKEN_PROGRAM_ID)
+            
+            // Add all instructions in order
+            transaction.add(createAtaIx)
+            transaction.add(wrapSolIx)
+            transaction.add(syncNativeIx)
+            
+            console.log('Added 3 WSOL setup instructions: createATA, wrapSOL, syncNative')
+          }
+        }
+        
+        // Add the stake instruction
         transaction.add(stakeIx)
 
         console.log('Stake transaction built with', transaction.instructions.length, 'instructions')
