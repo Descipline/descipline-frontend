@@ -85,15 +85,15 @@ export function TransactionProgressModal({
 
   // Auto-close for simple flow (create challenge)
   useEffect(() => {
-    if (showSimpleFlow && step === TransactionStep.SUCCESS && signature) {
-      // Auto close after 2 seconds for simple flow
+    if (showSimpleFlow && step === TransactionStep.SUCCESS) {
+      // Auto close after 2 seconds for simple flow, no need to wait for signature polling
       const timeout = setTimeout(() => {
         onClose()
       }, 2000)
       
       return () => clearTimeout(timeout)
     }
-  }, [showSimpleFlow, step, signature, onClose])
+  }, [showSimpleFlow, step, onClose])
 
   // Poll transaction status when signature is available and step is SUCCESS (only for full flow)
   useEffect(() => {
@@ -315,34 +315,46 @@ export function TransactionProgressModal({
               {console.log('🔍 Rendering transaction card with signature:', signature)}
               <View style={[styles.transactionCard, styles.fullWidthCard]}>
                 <View style={styles.transactionRow}>
-                  <AppText style={styles.transactionLabel}>TEST LABEL</AppText>
+                  <AppText style={styles.transactionLabel}>Transaction Hash</AppText>
                   <View style={styles.transactionValueRow}>
                     <AppText style={styles.transactionValue} numberOfLines={1}>
-                      TEST HASH VALUE
+                      {signature ? `${signature.slice(0, 8)}...${signature.slice(-8)}` : 'Loading...'}
                     </AppText>
                     <TouchableOpacity
                       style={styles.copyButton}
-                      onPress={() => console.log('Copy clicked')}
+                      onPress={() => copyToClipboard(signature || '', 'Transaction hash')}
                       activeOpacity={0.8}
+                      disabled={!signature}
                     >
-                      <AppText style={{color: 'red', fontSize: 20}}>COPY</AppText>
+                      <UiIconSymbol 
+                        name="doc.on.doc" 
+                        size={16} 
+                        color={signature ? SolanaColors.brand.purple : 'rgba(153, 69, 255, 0.3)'} 
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
                 
                 {/* Program Address Row */}
                 <View style={styles.transactionRow}>
-                  <AppText style={styles.transactionLabel}>TEST PROGRAM</AppText>
+                  <AppText style={styles.transactionLabel}>Program Address</AppText>
                   <View style={styles.transactionValueRow}>
                     <AppText style={styles.transactionValue} numberOfLines={1}>
-                      TEST PROGRAM VALUE
+                      {(() => {
+                        const programId = getDesciplinePublicKeys().PROGRAM_ID.toString()
+                        return `${programId.slice(0, 8)}...${programId.slice(-8)}`
+                      })()}
                     </AppText>
                     <TouchableOpacity
                       style={styles.copyButton}
-                      onPress={() => console.log('Program copy clicked')}
+                      onPress={() => copyToClipboard(getDesciplinePublicKeys().PROGRAM_ID.toString(), 'Program address')}
                       activeOpacity={0.8}
                     >
-                      <AppText style={{color: 'blue', fontSize: 20}}>PROG</AppText>
+                      <UiIconSymbol 
+                        name="doc.on.doc" 
+                        size={16} 
+                        color={SolanaColors.brand.purple} 
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
