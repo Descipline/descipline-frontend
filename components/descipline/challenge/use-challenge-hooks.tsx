@@ -84,7 +84,7 @@ export function useCreateChallenge() {
         return {
           signature,
           challengeId: challengePda.toString(),
-          challengePda,
+          challengePda: challengePda.toString(),
           formData,
           transactionHash: signature
         }
