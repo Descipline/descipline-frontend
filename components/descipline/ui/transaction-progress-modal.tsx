@@ -291,45 +291,37 @@ export function TransactionProgressModal({
                 </View>
               )}
 
-              {/* Transaction Details */}
-              <View style={styles.detailsCard}>
-                <View style={styles.detailRow}>
-                  <AppText style={styles.detailLabel}>Transaction</AppText>
-                  <View style={styles.detailValueRow}>
-                    <AppText style={styles.detailValue}>
+              {/* Transaction Details - Following Create Success Style */}
+              <View style={styles.transactionCard}>
+                <AppText style={styles.transactionTitle}>📋 Transaction Details</AppText>
+                
+                <View style={styles.transactionRow}>
+                  <AppText style={styles.transactionLabel}>Transaction</AppText>
+                  <View style={styles.transactionValueRow}>
+                    <AppText style={styles.transactionValue} numberOfLines={1}>
                       {signature.slice(0, 8)}...{signature.slice(-8)}
                     </AppText>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.copyButton}
                       onPress={() => copyToClipboard(signature, 'Transaction hash')}
                       activeOpacity={0.8}
                     >
-                      <UiIconSymbol name="doc.on.doc" size={14} color="#ffffff" />
+                      <UiIconSymbol name="doc.on.doc" size={16} color={SolanaColors.brand.purple} />
                     </TouchableOpacity>
                   </View>
                 </View>
                 
                 {mode === 'claim' && rewardAmount && (
-                  <View style={styles.detailRow}>
-                    <AppText style={styles.detailLabel}>Reward Amount</AppText>
-                    <View style={styles.detailValueRow}>
-                      <AppText style={styles.detailValue}>
+                  <View style={styles.transactionRow}>
+                    <AppText style={styles.transactionLabel}>Reward Amount</AppText>
+                    <View style={styles.transactionValueRow}>
+                      <AppText style={styles.transactionValue}>
                         {(rewardAmount / Math.pow(10, 6)).toFixed(2)} USDC
                       </AppText>
                     </View>
                   </View>
                 )}
               </View>
-
-              {/* Explorer Button */}
-              <TouchableOpacity
-                style={styles.explorerButton}
-                onPress={openExplorer}
-                activeOpacity={0.8}
-              >
-                <UiIconSymbol name="safari" size={16} color="#ffffff" />
-                <AppText style={styles.explorerText}>View on Explorer</AppText>
-              </TouchableOpacity>
             </>
           )}
 
@@ -344,11 +336,38 @@ export function TransactionProgressModal({
             </TouchableOpacity>
           )}
 
-          {canClose && (
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <AppText style={styles.closeButtonText}>
-                {step === TransactionStep.SUCCESS && txStatus === TransactionStatus.FINALIZED ? 'Continue' : 
-                 step === TransactionStep.SUCCESS ? 'Close' : 'Close'}
+          {/* Success Actions - Following Create Success Design */}
+          {step === TransactionStep.SUCCESS && signature && txStatus === TransactionStatus.FINALIZED && (
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={openExplorer}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={[SolanaColors.brand.purple, '#dc1fff']}
+                  style={styles.primaryButtonGradient}
+                />
+                <UiIconSymbol name="arrow.up.right.square" size={20} color="#ffffff" />
+                <AppText style={styles.primaryButtonText}>View on Explorer</AppText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={onClose}
+                activeOpacity={0.8}
+              >
+                <UiIconSymbol name="xmark" size={16} color={SolanaColors.brand.purple} />
+                <AppText style={styles.secondaryButtonText}>Close</AppText>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Simple Close for non-finalized states */}
+          {canClose && !(step === TransactionStep.SUCCESS && signature && txStatus === TransactionStatus.FINALIZED) && (
+            <TouchableOpacity style={styles.simpleCloseButton} onPress={onClose}>
+              <AppText style={styles.simpleCloseButtonText}>
+                {step === TransactionStep.SUCCESS ? 'Close' : 'Close'}
               </AppText>
             </TouchableOpacity>
           )}
@@ -444,13 +463,58 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#ffffff',
   },
-  closeButton: {
+  // Success Action Buttons - Following Create Success Style
+  actionButtons: {
+    marginTop: 8,
+    gap: 12,
+  },
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    borderRadius: 16,
+    marginBottom: 8,
+    gap: 12,
+    overflow: 'hidden',
+    shadowColor: SolanaColors.brand.purple,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  primaryButtonGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: SolanaColors.brand.purple,
+    backgroundColor: 'rgba(153, 69, 255, 0.1)',
+    gap: 8,
+  },
+  secondaryButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: SolanaColors.brand.purple,
+  },
+  // Simple close for non-success states
+  simpleCloseButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
-  closeButtonText: {
+  simpleCloseButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
