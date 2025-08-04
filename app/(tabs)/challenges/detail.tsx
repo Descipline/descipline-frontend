@@ -107,6 +107,23 @@ export default function ChallengeDetailScreen() {
   const canUserClaim = useCanUserClaim(id || '', account?.publicKey?.toString())
   const userReward = useGetUserReward(id || '', account?.publicKey?.toString())
 
+  // Debug logging for resolution and winner status
+  console.log('🔍 Challenge Detail Debug:', {
+    challengeId: id,
+    userAddress: account?.publicKey?.toString(),
+    resolutionLoaded: !!resolution,
+    resolutionData: resolution ? {
+      challengeName: resolution.challengeName,
+      totalParticipants: resolution.totalParticipants,
+      winnerCount: resolution.winnerCount,
+      winners: resolution.winners
+    } : null,
+    isWinner: isWinner,
+    canClaim: canUserClaim.canClaim,
+    claimReason: canUserClaim.reason,
+    proof: proof
+  })
+
   // Modal states
   const [showStakeModal, setShowStakeModal] = useState(false)
   const [showClaimModal, setShowClaimModal] = useState(false)

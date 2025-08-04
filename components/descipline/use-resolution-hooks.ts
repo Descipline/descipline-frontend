@@ -37,20 +37,26 @@ export function useGetResolution(challengeId: string) {
         // Dynamically construct resolution file URL
         const resolutionUrl = `/assets/resolutions/resolution-${challengeId}.json`
         
-        console.log('📁 Fetching resolution file:', resolutionUrl)
+        console.log('📁 Attempting to fetch resolution file:', resolutionUrl)
         
         // Use fetch to get resolution file
         const response = await fetch(resolutionUrl)
         
+        console.log('📡 Fetch response status:', response.status, response.statusText)
+        
         if (!response.ok) {
-          console.log('⚠️ Resolution file not found, challenge may not be resolved yet')
+          console.log('⚠️ Resolution file not found (HTTP', response.status, '), challenge may not be resolved yet')
           return null
         }
         
         const resolutionData = await response.json() as ResolutionData
         
-        console.log('✅ Successfully loaded resolution data for challenge:', resolutionData.challengeName)
-        console.log('🏆 Winners:', resolutionData.winners.length)
+        console.log('✅ Successfully loaded resolution data!')
+        console.log('📋 Challenge Name:', resolutionData.challengeName)
+        console.log('👥 Total Participants:', resolutionData.totalParticipants)
+        console.log('🏆 Winner Count:', resolutionData.winnerCount)
+        console.log('🎯 Winners List:', resolutionData.winners)
+        console.log('🌳 Merkle Root:', resolutionData.merkleRoot)
         
         return resolutionData
         
@@ -85,7 +91,12 @@ export function useGetWinnerProof(challengeId: string, userAddress?: string) {
     const isWinner = resolution.winners.includes(userAddress)
     const proofData = resolution.merkleProofs.find(p => p.address === userAddress)
     
-    console.log(`✅ User ${userAddress} is winner: ${isWinner}`)
+    console.log('🎯 Winner Check Results:')
+    console.log('   - User Address:', userAddress)
+    console.log('   - Is Winner:', isWinner)
+    console.log('   - Has Proof Data:', !!proofData)
+    console.log('   - Proof Length:', proofData?.proof?.length || 0)
+    console.log('   - Merkle Root:', resolution.merkleRoot)
     
     return {
       isWinner,
