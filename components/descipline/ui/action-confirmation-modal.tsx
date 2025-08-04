@@ -121,11 +121,11 @@ export function ActionConfirmationModal({
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerLeft}>
-              <UiIconSymbol 
+              {/* <UiIconSymbol 
                 name={mode === 'claim' ? "gift.fill" : "checkmark.shield.fill"} 
                 size={24} 
                 color={mode === 'claim' ? "#fbbf24" : SolanaColors.brand.purple} 
-              />
+              /> */}
               <AppText style={styles.headerTitle}>
                 {mode === 'claim' ? 'Claim Reward' : 'Confirm Participation'}
               </AppText>
@@ -178,7 +178,7 @@ export function ActionConfirmationModal({
                     <View style={styles.paymentRow}>
                       <AppText style={styles.paymentLabel}>Status</AppText>
                       <View style={styles.winnerBadge}>
-                        <UiIconSymbol name="crown.fill" size={14} color="#fbbf24" />
+                        {/* <UiIconSymbol name="crown.fill" size={14} color="#fbbf24" /> */}
                         <AppText style={styles.winnerText}>🏆 Winner!</AppText>
                       </View>
                     </View>
