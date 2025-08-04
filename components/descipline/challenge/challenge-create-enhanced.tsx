@@ -14,6 +14,7 @@ import { TokenAllowed, CreateChallengeFormData } from '@/utils/descipline/types'
 import { SolanaColors } from '@/constants/colors'
 
 import { ChallengeSuccessEnhanced } from './challenge-success-enhanced'
+import { TransactionProgressModal, TransactionStep } from '../ui/transaction-progress-modal'
 
 // Create process step enumeration
 enum CreateStep {
@@ -171,8 +172,7 @@ function ChallengePreview({
           disabled={isLoading}
           activeOpacity={0.8}
         >
-          <UiIconSymbol name="pencil" size={16} color={SolanaColors.brand.purple} />
-          <AppText style={styles.editButtonText}>Edit Details</AppText>
+          <AppText style={styles.editButtonText}>Edit</AppText>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -188,15 +188,10 @@ function ChallengePreview({
             }
             style={styles.confirmButtonGradient}
           />
-          <UiIconSymbol 
-            name={isLoading ? "hourglass" : "plus.circle.fill"} 
-            size={20} 
-            color="#ffffff" 
-          />
           <AppText style={styles.confirmButtonText}>
             {isLoading 
               ? getLoadingMessage(currentStep, formData.tokenType)
-              : '🚀 Create Challenge'
+              : 'Confirm'
             }
           </AppText>
         </TouchableOpacity>
@@ -233,6 +228,12 @@ export function ChallengeCreateEnhanced() {
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [transactionResult, setTransactionResult] = useState<any>(null)
+  
+  // Transaction progress modal states
+  const [showTransactionModal, setShowTransactionModal] = useState(false)
+  const [transactionStep, setTransactionStep] = useState<TransactionStep>(TransactionStep.PREPARING)
+  const [transactionError, setTransactionError] = useState<string>()
+  const [transactionSignature, setTransactionSignature] = useState<string>()
 
   const steps = [
     { key: CreateStep.FORM, title: 'Details', icon: 'pencil' },
@@ -320,12 +321,41 @@ export function ChallengeCreateEnhanced() {
     console.log('Validation passed, starting challenge creation...')
 
     try {
-      // Progress handler to update UI state
-      const onProgress = (step: string, message: string) => {
-        console.log(`Progress: ${step} - ${message}`)
+      // Show transaction modal
+      setShowTransactionModal(true)
+      setTransactionError(undefined)
+      setTransactionSignature(undefined)
+      
+      // Progress handler to update transaction modal
+      const onProgress = (step: TransactionStep, data?: any) => {
+        console.log(`Transaction progress: ${step}`, data)
+        setTransactionStep(step)
+        
+        if (data?.signature) {
+          setTransactionSignature(data.signature)
+        }
+        
+        if (data?.error) {
+          setTransactionError(data.error)
+        }
+        
+        // Update create step based on transaction progress
         switch (step) {
-          case 'creating_challenge':
+          case TransactionStep.PREPARING:
+          case TransactionStep.SIGNING:
+          case TransactionStep.SENDING:
+          case TransactionStep.CONFIRMING:
             setCurrentStep(CreateStep.CREATING_CHALLENGE)
+            break
+          case TransactionStep.SUCCESS:
+            // Keep modal open to show success, then transition
+            setTimeout(() => {
+              setShowTransactionModal(false)
+              setCurrentStep(CreateStep.SUCCESS)
+            }, 2000)
+            break
+          case TransactionStep.ERROR:
+            // Keep modal open to show error
             break
         }
       }
@@ -334,12 +364,10 @@ export function ChallengeCreateEnhanced() {
       
       // Store transaction result for enhanced success page
       setTransactionResult(result)
-      setCurrentStep(CreateStep.SUCCESS)
       
     } catch (error: any) {
       console.error('Create challenge failed:', error)
-      setCurrentStep(CreateStep.PREVIEW) // Go back to preview on error
-      Alert.alert('Error', error.message || 'Failed to create challenge')
+      // Error is handled by onProgress callback
     }
   }, [formData, createMutation, router])
 
@@ -446,6 +474,29 @@ export function ChallengeCreateEnhanced() {
         return '1 Day After'
     }
   }, [])
+
+  // Transaction modal handlers
+  const handleTransactionClose = useCallback(() => {
+    setShowTransactionModal(false)
+    if (transactionStep === TransactionStep.ERROR) {
+      // Go back to preview on error
+      setCurrentStep(CreateStep.PREVIEW)
+    }
+  }, [transactionStep])
+
+  const handleTransactionRetry = useCallback(() => {
+    setShowTransactionModal(false)
+    setCurrentStep(CreateStep.PREVIEW)
+    // User can click Confirm again to retry
+  }, [])
+
+  const handleViewTransaction = useCallback(() => {
+    if (transactionSignature) {
+      // Open transaction in Solana Explorer
+      const explorerUrl = `https://explorer.solana.com/tx/${transactionSignature}?cluster=devnet`
+      console.log('Opening transaction in explorer:', explorerUrl)
+    }
+  }, [transactionSignature])
 
   const renderFormStep = () => (
     <ScrollView
@@ -737,6 +788,18 @@ export function ChallengeCreateEnhanced() {
           />
         </ScrollView>
       )}
+      
+      {/* Transaction Progress Modal */}
+      <TransactionProgressModal
+        visible={showTransactionModal}
+        step={transactionStep}
+        error={transactionError}
+        signature={transactionSignature}
+        onClose={handleTransactionClose}
+        onRetry={handleTransactionRetry}
+        onViewTransaction={handleViewTransaction}
+        mode="stake" // Using stake mode as it's similar to challenge creation
+      />
     </AppView>
   )
 }

@@ -249,7 +249,7 @@ export function TransactionProgressModal({
           <ScrollView 
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
+            showsVerticalScrollIndicator={true}
             bounces={false}
           >
           <LinearGradient
@@ -413,6 +413,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: 32,
     alignItems: 'center',
+    minHeight: 300,
   },
   iconContainer: {
     width: 96,
