@@ -291,18 +291,11 @@ export function TransactionProgressModal({
           <AppText style={styles.message}>{stepInfo.message}</AppText>
 
           {/* Transaction Status and Details */}
-          {step === TransactionStep.SUCCESS && signature && !showSimpleFlow && (
+          {console.log('🔍 Modal render check:', { step, signature: signature ? 'EXISTS' : 'MISSING', showSimpleFlow })}
+          {step === TransactionStep.SUCCESS && signature && (
             <>
-              {/* Debug logging */}
-              {console.log('🔍 TransactionModal DEBUG:', { 
-                step, 
-                signature, 
-                showSimpleFlow, 
-                txStatus,
-                stepInfo: stepInfo.title 
-              })}
-              {/* Status Indicator */}
-              {txStatus !== TransactionStatus.FAILED && (
+              {/* Status Indicator - Only for full flow */}
+              {!showSimpleFlow && txStatus !== TransactionStatus.FAILED && (
                 <View style={styles.statusCard}>
                   <View style={styles.statusIndicator}>
                     <View style={[styles.statusDot, { backgroundColor: stepInfo.color }]} />
@@ -319,6 +312,7 @@ export function TransactionProgressModal({
               )}
 
               {/* Transaction Information - Spacious Layout */}
+              {console.log('🔍 Rendering transaction card with signature:', signature)}
               <View style={styles.transactionCard}>
                 <View style={styles.transactionRow}>
                   <AppText style={styles.transactionLabel}>Transaction Hash</AppText>
@@ -393,8 +387,8 @@ export function TransactionProgressModal({
           {/* Success Actions - Unified Style for All SUCCESS States */}
           {step === TransactionStep.SUCCESS && signature && (
             <View style={styles.actionButtons}>
-              {/* View on Explorer - Only show when finalized */}
-              {txStatus === TransactionStatus.FINALIZED && (
+              {/* View on Explorer - Show when finalized OR in simple flow */}
+              {(txStatus === TransactionStatus.FINALIZED || showSimpleFlow) && (
                 <TouchableOpacity
                   style={styles.primaryButton}
                   onPress={openExplorer}

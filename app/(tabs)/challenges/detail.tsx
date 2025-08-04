@@ -214,12 +214,6 @@ export default function ChallengeDetailScreen() {
       setTransactionError(data.error)
     }
     
-    // Debug: Log current state after update
-    console.log('🎯 Current transaction state:', {
-      step,
-      signature: data?.signature || transactionSignature,
-      error: data?.error || transactionError
-    })
   }
 
 
@@ -464,12 +458,6 @@ export default function ChallengeDetailScreen() {
       </ScrollView>
 
       {/* Transaction Progress Modal */}
-      {console.log('🎯 Rendering TransactionProgressModal with:', {
-        visible: showTransactionModal,
-        step: transactionStep,
-        signature: transactionSignature,
-        showSimpleFlow: false
-      })}
       <TransactionProgressModal
         visible={showTransactionModal}
         step={transactionStep}
