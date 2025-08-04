@@ -274,26 +274,21 @@ export function TransactionProgressModal({
             style={StyleSheet.absoluteFillObject}
           />
           
-          <ScrollView 
-            style={styles.modalScrollView}
-            contentContainerStyle={styles.modalScrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Progress Circle */}
-            <View style={[styles.iconContainer, { backgroundColor: `${stepInfo.color}20` }]}>
-              <UiIconSymbol 
-                name={stepInfo.icon} 
-                size={48} 
-                color={stepInfo.color} 
-              />
-              {stepInfo.showProgress && (
-                <View style={[styles.progressRing, { borderTopColor: stepInfo.color }]} />
-              )}
-            </View>
+          {/* Progress Circle */}
+          <View style={[styles.iconContainer, { backgroundColor: `${stepInfo.color}20` }]}>
+            <UiIconSymbol 
+              name={stepInfo.icon} 
+              size={48} 
+              color={stepInfo.color} 
+            />
+            {stepInfo.showProgress && (
+              <View style={[styles.progressRing, { borderTopColor: stepInfo.color }]} />
+            )}
+          </View>
 
-            {/* Content */}
-            <AppText style={styles.title}>{stepInfo.title}</AppText>
-            <AppText style={styles.message}>{stepInfo.message}</AppText>
+          {/* Content */}
+          <AppText style={styles.title}>{stepInfo.title}</AppText>
+          <AppText style={styles.message}>{stepInfo.message}</AppText>
 
           {/* Transaction Status and Details */}
           {console.log('🔍 Modal render check:', { step, signature: signature ? 'EXISTS' : 'MISSING', showSimpleFlow })}
@@ -413,13 +408,12 @@ export function TransactionProgressModal({
             </View>
           )}
 
-            {/* Simple Close for non-SUCCESS states */}
-            {canClose && step !== TransactionStep.SUCCESS && (
-              <TouchableOpacity style={styles.simpleCloseButton} onPress={onClose}>
-                <AppText style={styles.simpleCloseButtonText}>Close</AppText>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
+          {/* Simple Close for non-SUCCESS states */}
+          {canClose && step !== TransactionStep.SUCCESS && (
+            <TouchableOpacity style={styles.simpleCloseButton} onPress={onClose}>
+              <AppText style={styles.simpleCloseButtonText}>Close</AppText>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
       
@@ -444,20 +438,12 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     borderRadius: 20,
+    padding: 32,
     alignItems: 'center',
     minWidth: 300,
-    maxHeight: '80%', // Limit modal height
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
-  },
-  modalScrollView: {
-    flex: 1,
-    width: '100%',
-  },
-  modalScrollContent: {
-    padding: 32,
-    alignItems: 'center',
   },
   iconContainer: {
     width: 96,
