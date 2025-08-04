@@ -139,8 +139,10 @@ export function ActionConfirmationModal({
           <ScrollView 
             style={styles.content} 
             showsVerticalScrollIndicator={true}
+            scrollIndicatorInsets={{ right: 1 }}
             bounces={false}
             contentContainerStyle={styles.contentContainer}
+            nestedScrollEnabled={true}
           >
             {/* Challenge Info */}
             <View style={styles.section}>
@@ -361,8 +363,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: '100%',
     maxWidth: 480,
+    height: '85%',
     maxHeight: '85%',
-    minHeight: 400,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     shadowColor: '#000',
@@ -405,7 +407,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingBottom: 16,
-    minHeight: 200,
+    flexGrow: 1,
   },
   section: {
     marginBottom: 24,

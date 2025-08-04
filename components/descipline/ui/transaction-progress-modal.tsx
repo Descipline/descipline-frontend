@@ -248,11 +248,10 @@ export function TransactionProgressModal({
       onRequestClose={canClose ? onClose : undefined}
     >
       <View style={[styles.overlay, { backgroundColor: 'rgba(255, 0, 0, 0.9)' }]}>
-        <TouchableOpacity 
-          style={styles.modalContainer}
-          activeOpacity={1}
-          onPress={(e) => e.stopPropagation()}
-        >
+        <View style={[styles.modalContainer, { backgroundColor: 'white', borderWidth: 3, borderColor: 'blue' }]}>
+          <AppText style={{ color: 'black', fontSize: 24, textAlign: 'center', padding: 20 }}>
+            TEST MODAL CONTENT - Step: {step}
+          </AppText>
           <ScrollView 
             style={styles.scrollView}
             contentContainerStyle={styles.scrollContent}
