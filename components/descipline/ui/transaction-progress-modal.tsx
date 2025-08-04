@@ -274,21 +274,26 @@ export function TransactionProgressModal({
             style={StyleSheet.absoluteFillObject}
           />
           
-          {/* Progress Circle */}
-          <View style={[styles.iconContainer, { backgroundColor: `${stepInfo.color}20` }]}>
-            <UiIconSymbol 
-              name={stepInfo.icon} 
-              size={48} 
-              color={stepInfo.color} 
-            />
-            {stepInfo.showProgress && (
-              <View style={[styles.progressRing, { borderTopColor: stepInfo.color }]} />
-            )}
-          </View>
+          <ScrollView 
+            style={styles.modalScrollView}
+            contentContainerStyle={styles.modalScrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Progress Circle */}
+            <View style={[styles.iconContainer, { backgroundColor: `${stepInfo.color}20` }]}>
+              <UiIconSymbol 
+                name={stepInfo.icon} 
+                size={48} 
+                color={stepInfo.color} 
+              />
+              {stepInfo.showProgress && (
+                <View style={[styles.progressRing, { borderTopColor: stepInfo.color }]} />
+              )}
+            </View>
 
-          {/* Content */}
-          <AppText style={styles.title}>{stepInfo.title}</AppText>
-          <AppText style={styles.message}>{stepInfo.message}</AppText>
+            {/* Content */}
+            <AppText style={styles.title}>{stepInfo.title}</AppText>
+            <AppText style={styles.message}>{stepInfo.message}</AppText>
 
           {/* Transaction Status and Details */}
           {console.log('🔍 Modal render check:', { step, signature: signature ? 'EXISTS' : 'MISSING', showSimpleFlow })}
@@ -313,48 +318,36 @@ export function TransactionProgressModal({
 
               {/* Transaction Information - Spacious Layout */}
               {console.log('🔍 Rendering transaction card with signature:', signature)}
-              <View style={styles.transactionCard}>
+              <View style={[styles.transactionCard, styles.fullWidthCard]}>
                 <View style={styles.transactionRow}>
-                  <AppText style={styles.transactionLabel}>Transaction Hash</AppText>
+                  <AppText style={styles.transactionLabel}>TEST LABEL</AppText>
                   <View style={styles.transactionValueRow}>
                     <AppText style={styles.transactionValue} numberOfLines={1}>
-                      {signature ? `${signature.slice(0, 8)}...${signature.slice(-8)}` : 'Loading...'}
+                      TEST HASH VALUE
                     </AppText>
                     <TouchableOpacity
                       style={styles.copyButton}
-                      onPress={() => copyToClipboard(signature || '', 'Transaction hash')}
+                      onPress={() => console.log('Copy clicked')}
                       activeOpacity={0.8}
-                      disabled={!signature}
                     >
-                      <UiIconSymbol 
-                        name="doc.on.doc" 
-                        size={16} 
-                        color={signature ? SolanaColors.brand.purple : 'rgba(153, 69, 255, 0.3)'} 
-                      />
+                      <AppText style={{color: 'red', fontSize: 20}}>COPY</AppText>
                     </TouchableOpacity>
                   </View>
                 </View>
                 
                 {/* Program Address Row */}
                 <View style={styles.transactionRow}>
-                  <AppText style={styles.transactionLabel}>Program Address</AppText>
+                  <AppText style={styles.transactionLabel}>TEST PROGRAM</AppText>
                   <View style={styles.transactionValueRow}>
                     <AppText style={styles.transactionValue} numberOfLines={1}>
-                      {(() => {
-                        const programId = getDesciplinePublicKeys().PROGRAM_ID.toString()
-                        return `${programId.slice(0, 8)}...${programId.slice(-8)}`
-                      })()}
+                      TEST PROGRAM VALUE
                     </AppText>
                     <TouchableOpacity
                       style={styles.copyButton}
-                      onPress={() => copyToClipboard(getDesciplinePublicKeys().PROGRAM_ID.toString(), 'Program address')}
+                      onPress={() => console.log('Program copy clicked')}
                       activeOpacity={0.8}
                     >
-                      <UiIconSymbol 
-                        name="doc.on.doc" 
-                        size={16} 
-                        color={SolanaColors.brand.purple} 
-                      />
+                      <AppText style={{color: 'blue', fontSize: 20}}>PROG</AppText>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -403,9 +396,12 @@ export function TransactionProgressModal({
                 </TouchableOpacity>
               )}
 
-              {/* Close Button - Always show with same style */}
+              {/* Close Button - Full width style */}
               <TouchableOpacity
-                style={styles.secondaryButton}
+                style={[
+                  styles.secondaryButton,
+                  txStatus !== TransactionStatus.FINALIZED && styles.fullWidthButton
+                ]}
                 onPress={onClose}
                 activeOpacity={0.8}
               >
@@ -417,12 +413,13 @@ export function TransactionProgressModal({
             </View>
           )}
 
-          {/* Simple Close for non-SUCCESS states */}
-          {canClose && step !== TransactionStep.SUCCESS && (
-            <TouchableOpacity style={styles.simpleCloseButton} onPress={onClose}>
-              <AppText style={styles.simpleCloseButtonText}>Close</AppText>
-            </TouchableOpacity>
-          )}
+            {/* Simple Close for non-SUCCESS states */}
+            {canClose && step !== TransactionStep.SUCCESS && (
+              <TouchableOpacity style={styles.simpleCloseButton} onPress={onClose}>
+                <AppText style={styles.simpleCloseButtonText}>Close</AppText>
+              </TouchableOpacity>
+            )}
+          </ScrollView>
         </View>
       </View>
       
@@ -447,12 +444,20 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     borderRadius: 20,
-    padding: 32,
     alignItems: 'center',
     minWidth: 300,
+    maxHeight: '80%', // Limit modal height
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
+  },
+  modalScrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  modalScrollContent: {
+    padding: 32,
+    alignItems: 'center',
   },
   iconContainer: {
     width: 96,
@@ -560,6 +565,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: SolanaColors.brand.purple,
+  },
+  fullWidthButton: {
+    alignSelf: 'stretch', // Make button full width of container
+    marginHorizontal: 0,
+  },
+  fullWidthCard: {
+    alignSelf: 'stretch', // Make card full width
+    marginHorizontal: -8, // Extend to edges like actionButtons
   },
   // Simple close for non-success states
   simpleCloseButton: {
