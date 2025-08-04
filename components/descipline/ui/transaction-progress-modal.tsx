@@ -175,15 +175,18 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   modalContainer: {
     backgroundColor: SolanaColors.brand.dark,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
-    maxHeight: '85%',
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '80%',
     overflow: 'hidden',
   },
   scrollView: {
