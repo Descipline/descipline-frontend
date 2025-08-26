@@ -8,6 +8,7 @@
       "pnpm": "10.12.3"
     },
     "development": {
+      "node":"20.19.4",
       "extends": "base",
       "developmentClient": true,
       "distribution": "internal"

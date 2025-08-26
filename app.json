@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.constanbc1pq.desciplinedappmobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -50,7 +51,9 @@
     ],
     "extra": {
       "router": {},
-      "eas": {}
+      "eas": {
+        "projectId": "48d695ff-bbe2-4d0b-beac-b1c500a53e90"
+      }
     }
   }
 }
